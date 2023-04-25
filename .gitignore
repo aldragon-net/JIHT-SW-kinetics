@@ -104,14 +104,9 @@ celerybeat.pid
 # Environments
 .env
 .venv
-engine/*
-!engine/Lib/
-engine/Lib/*
-!engine/Lib/site-packages/
-engine/Lib/site-packages/*
-!engine/Lib/site-packages/sdtoolbox
+engine/
+venv/
 
-engine\Lib\site-packages\sdtoolbox
 
 # Spyder project settings
 .spyderproject
