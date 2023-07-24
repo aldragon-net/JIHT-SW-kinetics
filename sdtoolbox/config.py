@@ -14,6 +14,6 @@ Used by:
         PostReflectedShock_eq
 """
 
-ERRFT = 1e-4
-ERRFV = 1e-4
-volumeBoundRatio = 5
+ERRFT = 1e-4    # !! DEFAULT ERRFT = 1e-4 !! 
+ERRFV = 1e-4    # !! DEFAULT ERRFT = 1e-4 !!
+volumeBoundRatio = 6  # !! DEFAULT volumeBoundRatio = 5 !!
