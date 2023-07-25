@@ -100,7 +100,7 @@ def write_top_species(filename: str, molar=None, weight=None):
                 output.write(f'{name:>12}  {fraction}\n')
 
 
-pressures = [20000, 40000, 80000]
+pressures = [30000, 70000, 150000]
 T1 = 293
 
 
@@ -110,9 +110,10 @@ mechs = {
 }
 
 mixtures = {
-    '10C2H2': 'C2H2:10 AR:90',
-    '20C2H2': 'C2H2:20 AR:80',
-    '30C2H2': 'C2H2:30 AR:70',
+   '10C2H2': 'C2H2:10 AR:90',
+   '20C2H2': 'C2H2:20 AR:80',
+   '30C2H2': 'C2H2:30 AR:70',
+   '100C2H2': 'C2H2:100',
 }
 
 
@@ -120,14 +121,15 @@ for mech_label, mech in mechs.items():
     for mixture_label, mixture in mixtures.items():
         cj_velocities, states = pressure_CJ(pressures, T1, mixture, mech)
         cj_pressures = [state.P for state in states]
+        cj_temperatures = [state.T for state in states]
         filename = 'test_{mixture}_{mech}.out'.format(
             mixture=mixture_label,
             mech=mech_label
         )
         write_output(filename, pressures,
-                     [cj_velocities, cj_pressures],
+                     [cj_velocities, cj_pressures, cj_temperatures],
                      'Pressure[Pa]',
-                     ['CJ_velocity[m/s]', 'CJ_pressure[Pa]'])
+                     ['CJ_velocity[m/s]', 'CJ_pressure[Pa]', 'CJ_temperature[K]'])
         gas_for_analysis = states[-1]
         top_molar = get_top_molar_fraction(gas_for_analysis)
         top_weight = get_top_weight_fraction(gas_for_analysis)
