@@ -2,6 +2,7 @@ STOICHS = {
     'O2': 1,
     'H2': 2,
     'CH4': 0.5,
+    'CO': 2,
     'NH3': 4/3,
     'CH3OH': 2/3,
     'CH3OCH3': 1/3
@@ -13,8 +14,10 @@ PERCENT = 100
 o2_fraction = 7
 phi = 1.0
 
+
 def fraction_string(species, fraction):
     return f' {species}:{fraction:.3f}' if fraction > 0 else ''
+
 
 def get_trifuel_for_o2(o2_fraction, primary, secondary, tertiary, alpha, beta, phi=1.0, diluter='AR', TOTAL=100):
     alpha = alpha/TOTAL
@@ -33,6 +36,3 @@ def get_trifuel_for_o2(o2_fraction, primary, secondary, tertiary, alpha, beta, p
         (diluter, diluter_fraction)
     )]).strip()
     return result
-
-
-print(get_trifuel_for_o2(7, 'CH4', 'H2', 'CH3OH', 100, 0))

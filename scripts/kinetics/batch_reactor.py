@@ -1,15 +1,8 @@
 import numpy as np
-
 import time
-
 import cantera as ct
-
 import matplotlib.pyplot as plt
-
 from scripts.utils.mixture import get_trifuel_for_o2
-
-
-gas = ct.Solution("mechs/gri30_highT.yaml")
 
 
 def get_time_of_max_slope(states, species):
@@ -54,28 +47,113 @@ def get_temperature_dependence(gas, Ts, P, mixture):
         print(f'T = {temperature:.0f}, IDT = {tau*1e6:.0f} mks')
     return taus
 
-temperatures = np.linspace(1100, 1900, 3)
 
-alpha = 20
-beta = 0
-
-beta = 0
-labels = []
-alphas = [0, 10, 20, 100]
-dependencies = []
-for alpha in alphas:
-    mixture = get_trifuel_for_o2(7, 'CH4', 'H2', 'CH3OH', alpha, beta)
+def get_mixture_label(alpha, beta, tertiary=''):
     mixture_label = f'M_{alpha}_{beta}'
-    labels.append(mixture_label)
-    print(f'Temperature dependency for mixture {mixture_label} ({mixture}) :')
-    taus = get_temperature_dependence(gas, temperatures, 400000, mixture)
-    dependencies.append(taus)
+    if tertiary and beta>0:
+        mixture_label = mixture_label + f'({tertiary})'
+    return mixture_label
 
-output_labels = ['T']
-output_labels.extend(labels)
-print(', '.join(output_labels))
-for j in range(len(temperatures)):
-    print(f'{temperatures[j]:.0f}', end=', ')
-    for i in range(len(alphas)):
-        print(f'{dependencies[i][j]*1e6:.0f}', end=',')
-    print()
+
+def get_dependence_on_alfa(gas, oxygen_ratio, primary, secondary, tertiary, alphas, betas):
+    dependencies = []
+    for alpha in alphas:
+        on_betas = []
+        for beta in betas:
+            mixture = get_trifuel_for_o2(oxygen_ratio, primary, secondary, tertiary, alpha, beta)
+            mixture_label = get_mixture_label(alpha, beta, tertiary)
+            print(f'Temperature dependency for mixture {mixture_label} ({mixture}) :')
+            taus = get_temperature_dependence(gas, temperatures, 400000, mixture)
+            on_betas.append(taus)
+        dependencies.append(on_betas)
+    return dependencies
+
+
+def output_dependence_on_alfa(dependencies, alphas, betas, temperatures, beta_i=0, path='output/', prefix=''):
+    beta = betas[beta_i]
+    # direct export (to plot dependence on temperature)
+    mixture_labels = []
+    for alpha in alphas:
+        mixture_labels.append(get_mixture_label(alpha, beta))
+    file_labels = ['T[K]']
+    file_labels.extend(mixture_labels)
+    filename = path + f'{prefix}_M_x_{beta}.out'
+    with open(filename, 'w') as f:
+        f.write(', '.join(file_labels))
+        for t, temperature in enumerate(temperatures):
+            f.write('\n')
+            line = [f'{temperature:.0f}']
+            for a in range(len(alphas)):
+                delay = dependencies[a][beta_i][t]
+                line.append(f'{delay*1e6:.0f}')
+            f.write(', '.join(line))
+    # transposed export (to plot dependence on alpha)
+    file_labels = ['alpha[prcnt]']
+    file_labels.extend([f'T[{T:.0f}K]' for T in temperatures])   
+    filename = path + f'{prefix}_M_x_{beta}_tran.out'
+    with open(filename, 'w') as f:
+        f.write(', '.join(file_labels))
+        for a, alpha in enumerate(alphas):
+            f.write('\n')
+            line = [f'{alpha:.0f}']
+            for t in range(len(temperatures)):
+                delay = dependencies[a][beta_i][t]
+                line.append(f'{delay*1e6:.0f}')
+            f.write(', '.join(line))
+
+
+def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, path='output/', prefix=''):
+    alpha = alphas[alpha_i]
+    # direct export (to plot dependence on temperature)
+    mixture_labels = []
+    for beta in betas:
+        mixture_labels.append(get_mixture_label(alpha, beta))
+    file_labels = ['T[K]']
+    file_labels.extend(mixture_labels)
+    filename = path + f'{prefix}M_{alpha}_x.out'
+    with open(filename, 'w') as f:
+        f.write(', '.join(file_labels))
+        for t, temperature in enumerate(temperatures):
+            f.write('\n')
+            line = [f'{temperature:.0f}']
+            for b in range(len(betas)):
+                delay = dependencies[alpha_i][b][t]
+                line.append(f'{delay*1e6:.0f}')
+            f.write(', '.join(line))
+    # transposed export (to plot dependence on beta)
+    file_labels = ['beta[prcnt]']
+    file_labels.extend([f'T[{T:.0f}K]' for T in temperatures])   
+    filename = path + f'{prefix}M_{alpha}_x_tran.out'
+    with open(filename, 'w') as f:
+        f.write(', '.join(file_labels))
+        for b, beta in enumerate(betas):
+            f.write('\n')
+            line = [f'{beta:.0f}']
+            for t in range(len(temperatures)):
+                delay = dependencies[alpha_i][b][t]
+                line.append(f'{delay*1e6:.0f}')
+            f.write(', '.join(line))
+
+
+MECHS = {
+    'GRI': 'mechs/GRI/gri30.yaml',
+    'CRECK': 'mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml',
+    'Aramco': 'mechs/Aramco/Aramco30-no-tran.yaml'
+}
+
+temperatures = np.linspace(1000, 1900, 7)
+
+betas = [0, 20, 50]
+alphas = [0, 10, 20, 30, 100]
+primary = 'CH4'
+secondary = 'H2'
+tertiary = 'CO'
+mech = 'GRI'
+
+gas = ct.Solution(MECHS[mech])
+print(gas)
+
+dependencies = get_dependence_on_alfa(gas, 7, primary, secondary, tertiary, alphas, betas)
+
+output_dependence_on_alfa(dependencies, alphas, betas, temperatures, prefix=f'{mech}_{tertiary}_')
+output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
