@@ -75,17 +75,21 @@ def output_dependence_on_alfa(dependencies, alphas, betas, temperatures, beta_i=
     mixture_labels = []
     for alpha in alphas:
         mixture_labels.append(get_mixture_label(alpha, beta))
-    file_labels = ['T[K]']
+    file_labels = ['T[K]', '10000/T[K-1]']
     file_labels.extend(mixture_labels)
+    file_labels.extend([label+'_log' for label in mixture_labels])
     filename = path + f'{prefix}_M_x_{beta}.out'
     with open(filename, 'w') as f:
         f.write(', '.join(file_labels))
         for t, temperature in enumerate(temperatures):
             f.write('\n')
-            line = [f'{temperature:.0f}']
+            line = [f'{temperature:.0f}', f'{1e4/temperature:.4f}']
             for a in range(len(alphas)):
                 delay = dependencies[a][beta_i][t]
                 line.append(f'{delay*1e6:.0f}')
+            for a in range(len(alphas)):
+                log_delay = np.log(1e6*dependencies[a][beta_i][t])
+                line.append(f'{log_delay:.4f}')
             f.write(', '.join(line))
     # transposed export (to plot dependence on alpha)
     file_labels = ['alpha[prcnt]']
@@ -108,17 +112,21 @@ def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i
     mixture_labels = []
     for beta in betas:
         mixture_labels.append(get_mixture_label(alpha, beta))
-    file_labels = ['T[K]']
+    file_labels = ['T[K]', '10000/T[K-1]']
     file_labels.extend(mixture_labels)
+    file_labels.extend([label+'_log' for label in mixture_labels])
     filename = path + f'{prefix}M_{alpha}_x.out'
     with open(filename, 'w') as f:
         f.write(', '.join(file_labels))
         for t, temperature in enumerate(temperatures):
             f.write('\n')
-            line = [f'{temperature:.0f}']
+            line = [f'{temperature:.0f}', f'{1e4/temperature:.4f}']
             for b in range(len(betas)):
                 delay = dependencies[alpha_i][b][t]
                 line.append(f'{delay*1e6:.0f}')
+            for b in range(len(betas)):
+                log_delay = np.log(1e6*dependencies[alpha_i][b][t])
+                line.append(f'{log_delay:.4f}')
             f.write(', '.join(line))
     # transposed export (to plot dependence on beta)
     file_labels = ['beta[prcnt]']
@@ -138,17 +146,18 @@ def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i
 MECHS = {
     'GRI': 'mechs/GRI/gri30.yaml',
     'CRECK': 'mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml',
-    'Aramco': 'mechs/Aramco/Aramco30-no-tran.yaml'
+    'Aramco': 'mechs/Aramco/aramco2.yaml',
+    'FFCM': 'mechs/FFCM/FFCM1.yaml'
 }
 
-temperatures = np.linspace(1000, 1900, 7)
+temperatures = np.linspace(1000, 1900, 46)
 
-betas = [0, 20, 50]
-alphas = [0, 10, 20, 30, 100]
+betas = [0, 30, 100]
+alphas = [0,]
 primary = 'CH4'
 secondary = 'H2'
-tertiary = 'CO'
-mech = 'GRI'
+tertiary = 'CH3OCH3'
+mech = 'CRECK'
 
 gas = ct.Solution(MECHS[mech])
 print(gas)
@@ -156,4 +165,5 @@ print(gas)
 dependencies = get_dependence_on_alfa(gas, 7, primary, secondary, tertiary, alphas, betas)
 
 output_dependence_on_alfa(dependencies, alphas, betas, temperatures, prefix=f'{mech}_{tertiary}_')
-output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
+if len(betas) > 1:
+    output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
