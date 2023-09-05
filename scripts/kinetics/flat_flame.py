@@ -6,31 +6,29 @@ from pathlib import Path
 # Inlet Temperature in Kelvin and Inlet Pressure in Pascals
 # In this case we are setting the inlet T and P to room temperature conditions
 temperature = 300
-pressure = 101325
+pressure = 1013250
 
 # Define the gas-mixutre and kinetics
 # In this case, we are choosing a GRI3.0 gas
 gas = ct.Solution('mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml')
+# gas = ct.Solution('mechs/GRI/gri30_highT.yaml')
 
 width = 0.03
 
-gas.X = 'CH4:3.5 O2:7 N2:35'
+gas.X = 'CH4:3.5 O2:7 N2:0'
 gas.TP = temperature, pressure
 
 f = ct.FreeFlame(gas, width=width)
-f.set_refine_criteria(ratio=5, slope=0.2, curve=0.4, prune=0.01)
+f.set_refine_criteria(ratio=5, slope=0.1, curve=0.2, prune=0.01)
 f.set_refine_criteria()
 
-loglevel=1
+loglevel = 1
 
 # Solve with mixture-averaged transport model
 f.transport_model = 'mixture-averaged'
 f.solve(loglevel=1, auto=True)
-ct.FlameBase.set()
-if "native" in ct.hdf_support():
-    output = Path() / "adiabatic_flame.h5"
-else:
-    output = Path() / "adiabatic_flame.yaml"
+
+output = Path() / 'output/temp/adiabatic_flame.yaml'
 output.unlink(missing_ok=True)
 
 # Solve with the energy equation enabled
