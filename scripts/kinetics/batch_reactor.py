@@ -44,7 +44,7 @@ def get_temperature_dependence(gas, Ts, P, mixture):
     for temperature in Ts:
         tau = get_ignition_delay(gas, temperature, P, mixture)
         taus.append(tau)
-        print(f'T = {temperature:.0f}, IDT = {tau*1e6:.0f} mks')
+        print(f'{temperature:.0f} {tau*1e6:.0f}')
     return taus
 
 
@@ -147,23 +147,32 @@ MECHS = {
     'GRI': 'mechs/GRI/gri30.yaml',
     'CRECK': 'mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml',
     'Aramco': 'mechs/Aramco/aramco2.yaml',
-    'FFCM': 'mechs/FFCM/FFCM1.yaml'
+    'FFCM': 'mechs/FFCM/FFCM1.yaml',
+    'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml' 
 }
 
-temperatures = np.linspace(1000, 1900, 46)
 
-betas = [0, 30, 100]
-alphas = [0,]
-primary = 'CH4'
-secondary = 'H2'
-tertiary = 'CH3OCH3'
-mech = 'CRECK'
+temperatures = np.linspace(1000, 1960, 49)
+mech = 'BabuCRECK-NH3'
+gas = ct.Solution(MECHS[mech], 'gas')
+pressure = 5.1*1e5
+mixture = 'H2:14 O2:7 AR:79'
 
-gas = ct.Solution(MECHS[mech])
-print(gas)
+dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
 
-dependencies = get_dependence_on_alfa(gas, 7, primary, secondary, tertiary, alphas, betas)
+# !! alpha-beta-dependence !
+# betas = [0, 30, 100]
+# alphas = [0,]
+# primary = 'CH4'
+# secondary = 'H2'
+# tertiary = 'CH3OCH3'
+# mech = 'CRECK'
 
-output_dependence_on_alfa(dependencies, alphas, betas, temperatures, prefix=f'{mech}_{tertiary}_')
-if len(betas) > 1:
-    output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
+# gas = ct.Solution(MECHS[mech])
+# print(gas)
+
+# dependencies = get_dependence_on_alfa(gas, 7, primary, secondary, tertiary, alphas, betas)
+
+# output_dependence_on_alfa(dependencies, alphas, betas, temperatures, prefix=f'{mech}_{tertiary}_')
+# if len(betas) > 1:
+#     output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
