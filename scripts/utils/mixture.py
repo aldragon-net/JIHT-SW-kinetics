@@ -63,4 +63,3 @@ def get_trifule_for_air(primary, secondary, tertiary, alpha, beta, phi=1.0):
         ('N2', n2_fraction)
     )]).strip()
     return result
-

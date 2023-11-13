@@ -24,8 +24,8 @@ reference_species = "OH"
 
 
 def get_ignition_delay(gas, T, P, mixture, max_time=1):
-    gas.TP = T, P
     gas.X = mixture
+    gas.TP = T, P
     r = ct.IdealGasReactor(contents=gas, name="Batch Reactor")
     reactor_network = ct.ReactorNet([r])
     time_history = ct.SolutionArray(gas, extra="t")
@@ -44,13 +44,12 @@ def get_temperature_dependence(gas, Ts, P, mixture):
     for temperature in Ts:
         tau = get_ignition_delay(gas, temperature, P, mixture)
         taus.append(tau)
-        print(f'{temperature:.0f} {tau*1e6:.0f}')
     return taus
 
 
 def get_mixture_label(alpha, beta, tertiary=''):
     mixture_label = f'M_{alpha}_{beta}'
-    if tertiary and beta>0:
+    if tertiary and beta > 0:
         mixture_label = mixture_label + f'({tertiary})'
     return mixture_label
 
@@ -63,7 +62,7 @@ def get_dependence_on_alfa(gas, oxygen_ratio, primary, secondary, tertiary, alph
             mixture = get_trifuel_for_o2(oxygen_ratio, primary, secondary, tertiary, alpha, beta)
             mixture_label = get_mixture_label(alpha, beta, tertiary)
             print(f'Temperature dependency for mixture {mixture_label} ({mixture}) :')
-            taus = get_temperature_dependence(gas, temperatures, 400000, mixture)
+            taus = get_temperature_dependence(gas, temperatures, pressure, mixture)
             on_betas.append(taus)
         dependencies.append(on_betas)
     return dependencies
@@ -143,30 +142,61 @@ def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i
             f.write(', '.join(line))
 
 
+def idt_sensitivity(gas, T, P, mixture, dk=0.05):
+    sensitivities = []
+    gas.set_multiplier(1.0)
+    t0 = get_ignition_delay(gas, T, P, mixture)
+    print(f'Undisturbed tau = {t0*1e6:.2f} mks')
+    for r in range(503, 504): # gas.n_reactions):
+        gas.set_multiplier(1.0)  # reset all multipliers
+        gas.set_multiplier(1 + dk, r)  # perturb reaction m
+        t = get_ignition_delay(gas, T, P, mixture)
+        print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks') 
+        sensitivity = np.log(t/t0) / np.log(1+dk)
+        sensitivities.append((gas.reaction_equations()[r], sensitivity))
+        sensitivities.sort(key = lambda x: abs(x[1]), reverse=True)
+    gas.set_multiplier(1.0)
+    return sensitivities
+
+
 MECHS = {
-    'GRI': 'mechs/GRI/gri30.yaml',
+    'GRI': 'mechs/GRI/gri30_highT.yaml',
     'CRECK': 'mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml',
     'Aramco': 'mechs/Aramco/aramco2.yaml',
     'FFCM': 'mechs/FFCM/FFCM1.yaml',
-    'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml' 
+    'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml',
+    'Hong2011': 'mechs/Hong2011.yaml' 
 }
 
-
-temperatures = np.linspace(1000, 1960, 49)
+temperature = 1700
 mech = 'BabuCRECK-NH3'
 gas = ct.Solution(MECHS[mech], 'gas')
-pressure = 5.1*1e5
-mixture = 'H2:14 O2:7 AR:79'
+pressure = 4.1*1e5
+mixture = 'NH3:9.33 O2:7.000 CF3I:1 AR:82.67'
 
-dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
+
+sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
+for x in sensitivities[:20]:
+    print(f'{x[0]}, {x[1]:.5f}')
+
+# temperatures = np.linspace(1000, 1960, 49)
+# mech = 'BabuCRECK-NH3'
+# gas = ct.Solution(MECHS[mech], 'gas')
+# pressure = 5.1*1e5
+# mixture = 'H2:14 O2:7 AR:79'
+
+# dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
 
 # !! alpha-beta-dependence !
-# betas = [0, 30, 100]
-# alphas = [0,]
+# mech = 'GRI'
+# gas = ct.Solution(MECHS[mech], 'gri30')
+# alphas = [20]
+# betas = [0, 20, 50]
+# temperatures = np.linspace(1000, 1960, 49)
+# pressure = 4.9e5
 # primary = 'CH4'
 # secondary = 'H2'
-# tertiary = 'CH3OCH3'
-# mech = 'CRECK'
+# tertiary = 'CH3OH'
 
 # gas = ct.Solution(MECHS[mech])
 # print(gas)
@@ -175,4 +205,5 @@ dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
 
 # output_dependence_on_alfa(dependencies, alphas, betas, temperatures, prefix=f'{mech}_{tertiary}_')
 # if len(betas) > 1:
-#     output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=0, prefix=f'{mech}_{tertiary}_')
+#     for i in range(len(alphas)):
+#         output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i=i, prefix=f'{mech}_{tertiary}_')

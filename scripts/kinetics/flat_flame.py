@@ -14,7 +14,7 @@ MECHS = {
 
 def solve_flame(gas, loglevel=1):
     f = ct.FreeFlame(gas, width=width)
-    f.set_refine_criteria(ratio=5, slope=0.08, curve=0.16, prune=0.005)
+    f.set_refine_criteria(ratio=5, slope=0.5, curve=0.5, prune=0.005)
     f.transport_model = 'mixture-averaged'
     f.solve(loglevel=1)
     output = Path() / 'output/temp/adiabatic_flame.yaml'
