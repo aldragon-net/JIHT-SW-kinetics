@@ -147,7 +147,11 @@ def idt_sensitivity(gas, T, P, mixture, dk=0.05):
     gas.set_multiplier(1.0)
     t0 = get_ignition_delay(gas, T, P, mixture)
     print(f'Undisturbed tau = {t0*1e6:.2f} mks')
-    for r in range(503, 504): # gas.n_reactions):
+    for r in range(gas.n_reactions):
+        if 'H2O2' not in gas.reaction_equations()[r]:
+            print('skipped reaction', r)
+            continue
+        print(f'reaction {r} of {gas.n_reactions}')
         gas.set_multiplier(1.0)  # reset all multipliers
         gas.set_multiplier(1 + dk, r)  # perturb reaction m
         t = get_ignition_delay(gas, T, P, mixture)
@@ -165,14 +169,14 @@ MECHS = {
     'Aramco': 'mechs/Aramco/aramco2.yaml',
     'FFCM': 'mechs/FFCM/FFCM1.yaml',
     'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml',
-    'Hong2011': 'mechs/Hong2011.yaml' 
+    'Hong2011': 'mechs/Hong2011.yaml'
 }
 
-temperature = 1700
-mech = 'BabuCRECK-NH3'
+temperature = 1400
+mech = 'CRECK'
 gas = ct.Solution(MECHS[mech], 'gas')
-pressure = 4.1*1e5
-mixture = 'NH3:9.33 O2:7.000 CF3I:1 AR:82.67'
+pressure = 4.5*1e5
+mixture = 'CH4:2.24 H2:2.24 O2:7.000 CH3OH:0.93 AR:87.58'
 
 
 sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
