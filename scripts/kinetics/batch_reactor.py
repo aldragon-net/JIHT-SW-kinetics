@@ -23,7 +23,7 @@ def get_time_of_max_slope(states, species):
 reference_species = "OH"
 
 
-def get_ignition_delay(gas, T, P, mixture, max_time=1):
+def get_solution(gas, T, P, mixture, max_time=1):
     gas.X = mixture
     gas.TP = T, P
     r = ct.IdealGasReactor(contents=gas, name="Batch Reactor")
@@ -35,6 +35,15 @@ def get_ignition_delay(gas, T, P, mixture, max_time=1):
         t = reactor_network.step()
         time_history.append(r.thermo.state, t=t)
         counter += 1
+    return time_history
+
+
+def write_csv(time_history, filename="output.csv"):
+    time_history.write_csv(filename, species="X")
+
+
+def get_ignition_delay(gas, T, P, mixture, max_time=1):
+    time_history = get_solution(gas, T, P, mixture, max_time)
     tau = get_time_of_max_slope(time_history, reference_species)
     return tau
 
@@ -172,16 +181,19 @@ MECHS = {
     'Hong2011': 'mechs/Hong2011.yaml'
 }
 
-temperature = 1400
-mech = 'CRECK'
+temperature = 1650
+mech = 'BabuCRECK-NH3'
 gas = ct.Solution(MECHS[mech], 'gas')
-pressure = 4.5*1e5
-mixture = 'CH4:2.24 H2:2.24 O2:7.000 CH3OH:0.93 AR:87.58'
+print(gas.n_species)
+pressure = 4.0*1e5
+mixture = 'NH3:9.33 O2:7.000 AR:83.67'
 
+solution = get_solution(gas, temperature, pressure, mixture)
+solution.write_csv('output/output.csv', species="X")
 
-sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
-for x in sensitivities[:20]:
-    print(f'{x[0]}, {x[1]:.5f}')
+# sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
+# for x in sensitivities[:20]:
+#     print(f'{x[0]}, {x[1]:.5f}')
 
 # temperatures = np.linspace(1000, 1960, 49)
 # mech = 'BabuCRECK-NH3'
