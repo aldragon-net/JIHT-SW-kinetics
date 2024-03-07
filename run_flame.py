@@ -1,1 +1,1 @@
-from scripts.kinetics import flat_flame  # noqa
+from scripts.kinetics import impinging  # noqa

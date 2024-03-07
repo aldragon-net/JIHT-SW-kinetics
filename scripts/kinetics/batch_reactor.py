@@ -53,6 +53,7 @@ def get_temperature_dependence(gas, Ts, P, mixture):
     for temperature in Ts:
         tau = get_ignition_delay(gas, temperature, P, mixture)
         taus.append(tau)
+        print(temperature, tau)
     return taus
 
 
@@ -167,7 +168,7 @@ def idt_sensitivity(gas, T, P, mixture, dk=0.05):
         print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks') 
         sensitivity = np.log(t/t0) / np.log(1+dk)
         sensitivities.append((gas.reaction_equations()[r], sensitivity))
-        sensitivities.sort(key = lambda x: abs(x[1]), reverse=True)
+        sensitivities.sort(key=lambda x: abs(x[1]), reverse=True)
     gas.set_multiplier(1.0)
     return sensitivities
 
@@ -178,30 +179,32 @@ MECHS = {
     'Aramco': 'mechs/Aramco/aramco2.yaml',
     'FFCM': 'mechs/FFCM/FFCM1.yaml',
     'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml',
+    'BabuCRECK-NH3-ALL': 'mechs/modified/BabuCLBRCRECK.yaml',
     'Hong2011': 'mechs/Hong2011.yaml'
 }
 
-temperature = 1650
-mech = 'BabuCRECK-NH3'
-gas = ct.Solution(MECHS[mech], 'gas')
-print(gas.n_species)
-pressure = 4.0*1e5
-mixture = 'NH3:9.33 O2:7.000 AR:83.67'
+# temperature = 1650
+# mech = 'BabuCRECK-NH3-ALL'
+# gas = ct.Solution(MECHS[mech], 'gas')
 
-solution = get_solution(gas, temperature, pressure, mixture)
-solution.write_csv('output/output.csv', species="X")
+# pressure = 4.0*1e5
+# mixture = 'NH3:9.33 O2:7.000 AR:83.67'
+
+# solution = get_solution(gas, temperature, pressure, mixture)
+# solution.write_csv('output/output.csv', species="X")
 
 # sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
 # for x in sensitivities[:20]:
 #     print(f'{x[0]}, {x[1]:.5f}')
 
-# temperatures = np.linspace(1000, 1960, 49)
-# mech = 'BabuCRECK-NH3'
-# gas = ct.Solution(MECHS[mech], 'gas')
-# pressure = 5.1*1e5
-# mixture = 'H2:14 O2:7 AR:79'
+temperatures = np.linspace(1000, 1960, 49)
+mech = 'BabuCRECK-NH3-ALL'
+gas = ct.Solution(MECHS[mech], 'gas')
+print(gas.n_species)
+pressure = 5.0*1e5
+mixture = 'NH3:7.67 H2:2.8 O2:7 CCL4:1 AR:81.53'
 
-# dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
+dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
 
 # !! alpha-beta-dependence !
 # mech = 'GRI'
