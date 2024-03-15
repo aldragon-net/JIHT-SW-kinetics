@@ -19,7 +19,8 @@ def read_temperature_profile(filename):
             z_loc, t_value = line.strip().split()
             z_locs.append(float(z_loc))
             t_values.append(float(t_value))
-    profile = TemperatureProfile(z_locs, t_values)
+    relative_z_locs = [z_loc / z_locs[-1] for z_loc in z_locs]
+    profile = TemperatureProfile(relative_z_locs, t_values)
     return profile
 
 
