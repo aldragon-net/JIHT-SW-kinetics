@@ -24,5 +24,5 @@ ethylene_flame = FlameData(
     T_room=293,
     T_burner=400,
     T_body=600,
-    T_profile=read_temperature_profile('mckenna-noflame.dat')
+    T_profile=read_temperature_profile('mckenna-constructed.dat')
 )

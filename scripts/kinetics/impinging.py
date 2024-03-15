@@ -13,7 +13,7 @@ t_burner = 400  # burner temperature
 t_body = 600.0
 
 
-rxnmech = 'mechs/CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml'  # reaction mechanism file
+rxnmech = 'mechs/GRI/gri30.yaml' #CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml'  # reaction mechanism file
 comp = 'C2H4:1 O2:1.43 N2:5.32 AR:0.068'  # premixed gas composition
 
 
@@ -50,11 +50,10 @@ sim.set_grid_min(1e-4)
 sim.set_refine_criteria(ratio=ratio, slope=slope, curve=curve, prune=prune)
 
 sim.set_initial_guess(products='inlet')  # assume adiabatic equilibrium products
-sim.show()
 
 sim.solve(loglevel, auto=False)
 
-output_path = Path() / "stagnation_flame_data"
+output_path = Path() / "output" / "stagnation_flame_data"
 output_path.mkdir(parents=True, exist_ok=True)
 
 output = output_path / f"{flame.label}.yaml"
@@ -62,6 +61,7 @@ output.unlink(missing_ok=True)
 
 sim.save(output, name=f"{flame.label}_state", description=f"{flame.label}")
 # write the velocity, temperature, and mole fractions to a CSV file
-sim.save(output_path / f"{flame.label}.csv", basis="mole", overwrite=True)
+sim.save(output_path / f"{flame.label}_X.csv", basis="mole", overwrite=True)
+sim.save(output_path / f"{flame.label}_Y.csv", basis="mass", overwrite=True)
 
 sim.show_stats()
