@@ -22,6 +22,3 @@ def read_temperature_profile(filename):
     relative_z_locs = [z_loc / z_locs[-1] for z_loc in z_locs]
     profile = TemperatureProfile(relative_z_locs, t_values)
     return profile
-
-
-temperature_profile = read_temperature_profile('mckenna-noflame.dat')

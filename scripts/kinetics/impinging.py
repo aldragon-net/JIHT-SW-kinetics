@@ -2,7 +2,7 @@ from pathlib import Path
 import cantera as ct
 from configs.burners.impinging_jet_data import ImpingingJetData
 
-from configs.burners.flames import ethylene_flame
+from configs.burners.flames import acetylene_flame, ethylene_flame
 
 from configs.constants import OUTPUT_DIR, MCKENNA_OUTPUT 
 
@@ -17,7 +17,7 @@ class GridRefineCriteria:
 
 print("Launching")
 
-flame = ethylene_flame
+flame = acetylene_flame
 # parameter values
 p = ct.one_atm  # pressure
 t_room = 293
@@ -25,8 +25,7 @@ t_burner = 400  # burner temperature
 t_body = 600.0
 
 
-rxnmech = 'mechs/GRI/gri30.yaml'  # CRECK/CRECK_2003_TPRF_HT_LT_ALC_ETHERS.yaml'
-comp = 'C2H4:1 O2:1.43 N2:5.32 AR:0.068'  # premixed gas composition
+rxnmech = 'mechs/CRECK/CRECK_2003_TOT_HT_LT_SOOT.yaml'
 
 
 loglevel = 1  # amount of diagnostic output (0 to 5)
@@ -49,10 +48,10 @@ sim = ct.ImpingingJet(gas=gas, width=flame.height)
 
 # set the mass flow rate at the inlet
 sim.inlet.mdot = md
-sim.energy_enabled = False
-sim.flame.set_fixed_temp_profile(
-    flame.T_profile.positions, flame.T_profile.temperatures
-)
+# sim.energy_enabled = False
+# sim.flame.set_fixed_temp_profile(
+#     flame.T_profile.positions, flame.T_profile.temperatures
+# )
 
 # set the surface state
 sim.surface.T = t_body
@@ -63,7 +62,7 @@ sim.set_refine_criteria(ratio=ratio, slope=slope, curve=curve, prune=prune)
 
 sim.set_initial_guess(products='inlet')  # assume adiabatic equilibrium products
 
-sim.solve(loglevel, auto=False)
+sim.solve(loglevel, auto=True)
 
 output_path = Path() / "output" / "stagnation_flame_data"
 output_path.mkdir(parents=True, exist_ok=True)
