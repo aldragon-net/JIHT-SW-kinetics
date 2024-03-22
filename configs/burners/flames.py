@@ -34,7 +34,7 @@ for dme_fraction in dme_fractions:
     dme_flames.append(
         ImpingingJetData(
             label=f'C2H4_{100-dme_fraction}_DME_{dme_fraction}',
-            fuel=f'C2H4:{100-dme_fraction} CH4:{dme_fraction}',
+            fuel=f'C2H4:{100-dme_fraction} CH3OCH3:{dme_fraction}',
             fuel_flow_lph=84,
             oxydizer='O2:0.21, N2:0.78, AR:0.01',
             oxydizer_flow_lph=545,

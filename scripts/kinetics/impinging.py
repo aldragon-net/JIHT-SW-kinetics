@@ -97,12 +97,20 @@ def multi_solve_mckenna_stabilized(
 
 
 flames = [ethylene_flame, acetylene_flame]
+flames.extend(dme_flames)
 
-rxnmech = 'mechs/GRI/gri30.yaml'#'mechs/CRECK/CRECK_2003_TOT_HT_LT_SOOT.yaml'
+rxnmech = 'mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml'
+
+grid_refine_criteria = GridRefineCriteria(
+    ratio=3,
+    slope=0.06,
+    curve=0.12,
+    prune=0.03
+)
 
 multi_solve_mckenna_stabilized(
-    flames=dme_flames,
+    flames=flames,
     mech=rxnmech,
-    grid_refine_criteria=GridRefineCriteria(),
+    grid_refine_criteria=grid_refine_criteria,
     loglevel=0
 )

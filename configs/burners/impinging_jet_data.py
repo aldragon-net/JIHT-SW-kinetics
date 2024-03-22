@@ -3,8 +3,10 @@ from math import pi
 from configs.burners.mckenna import mckenna_jiht_lab19
 
 
+gas = ct.Solution('mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml')
+
+
 def get_inlet_mixture(fuel_mix, fuel_flow, oxydant_mix, oxydant_flow):
-    gas = ct.Solution('gri30.yaml')
     fuel = ct.Quantity(gas, constant='HP')
     fuel.TPX = 300.0, ct.one_atm, fuel_mix
     fuel.moles = fuel_flow

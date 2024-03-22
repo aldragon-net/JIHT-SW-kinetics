@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import PurePath
-from configs.species_slices import Y2_PAH_AND_SOOT, Y5_SOOT, BIN_X_SLICES, Y_SOOT_SLICES
+from configs.species_slices import BIN_X_SLICES, Y_SOOT_SLICES
 
 
 def sum_columns(filepath, suffix,
@@ -21,5 +21,5 @@ def sum_columns(filepath, suffix,
 def postprocess_creck_soot(path, flame):
     x_path = path / flame.label / f'{flame.label}_X.csv'
     y_path = path / flame.label / f'{flame.label}_y.csv'
-    sum_columns(x_path, suffix='BINs', new_columns={'test_sum': ['X_O2', 'X_H2']})
-    sum_columns(y_path, suffix='soot', new_columns={'test_sum': ['Y_O2', 'Y_H2']})
+    sum_columns(x_path, suffix='BINs', new_columns=BIN_X_SLICES)
+    sum_columns(y_path, suffix='soot', new_columns=Y_SOOT_SLICES)
