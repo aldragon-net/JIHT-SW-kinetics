@@ -3,7 +3,9 @@ from datetime import datetime
 import cantera as ct
 from configs.burners.impinging_jet_data import ImpingingJetData
 
-from configs.burners.flames import acetylene_flame, ethylene_flame, dme_flames
+from configs.burners.flames import (
+    acetylene_flame, ethylene_flame, dme_flames,
+    ethylene_est, ethylene_he25, ethylene_h2, ethylene_c3h8)
 
 from configs.constants import OUTPUT_DIR, MCKENNA_OUTPUT
 
@@ -49,11 +51,26 @@ def solve_mckenna_stabilized(
     gas.TPX = flame.T_room, flame.pressure, flame.mixture
     md = flame.inlet_velocity * gas.density  # kg/m^2/s
     gas.TP = flame.T_burner, flame.pressure
+    with open(output_path / 'report.rxt', 'a') as f:
+        f.write(f'\nElemental Mole Fractions:\n')
+        for element_name in gas.element_names:
+            f.write(f'{element_name} {gas.elemental_mole_fraction(element_name):.5f}\n')
+        carbon = gas.elemental_mole_fraction('C')
+        oxygen = gas.elemental_mole_fraction('O')
+        hydrogen = gas.elemental_mole_fraction('H')
+        free_oxygen = oxygen - 0.5*hydrogen
+        f.write(f'FREE_O {free_oxygen:.5f}\n')
+        f.write(f'C/O ratio {(carbon/oxygen):.5f}\n')
+        f.write(f'C/free_O ratio {(carbon/free_oxygen):.5f}\n')
+        f.write(f'EQ-ratio: {gas.equivalence_ratio():.5f}\n')
+        f.write(f'\nElemental Mass Fractions:\n')
+        for element_name in gas.element_names:
+            f.write(f'{element_name} {gas.elemental_mass_fraction(element_name):.5f}\n')
     # Create the stagnation flow object with a non-reactive surface
     sim = ct.ImpingingJet(gas=gas, width=flame.height)
     sim.inlet.mdot = md
     sim.surface.T = flame.T_body
-    sim.set_grid_min(1e-4)
+    sim.set_grid_min(2e-5)
     sim.set_refine_criteria(
         ratio=grid_refine_criteria.ratio,
         slope=grid_refine_criteria.slope,
@@ -68,6 +85,7 @@ def solve_mckenna_stabilized(
         )
         sim.solve(loglevel, auto=False)
     else:
+        sim.radiation_enabled = True
         sim.solve(loglevel, auto=True)
     output = output_path / f"{flame.label}.yaml"
     output.unlink(missing_ok=True)
@@ -96,10 +114,12 @@ def multi_solve_mckenna_stabilized(
     print(f'Finished at {datetime.now()}')
 
 
-flames = [ethylene_flame, acetylene_flame]
-flames.extend(dme_flames)
+# flames = [ethylene_flame, acetylene_flame]
+# flames.extend(dme_flames)
 
-rxnmech = 'mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml'
+flames = [ethylene_est, ethylene_he25, ethylene_h2, ethylene_c3h8]
+
+rxnmech = 'mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml'  #'mechs/GRI/gri30.yaml'
 
 grid_refine_criteria = GridRefineCriteria(
     ratio=3,

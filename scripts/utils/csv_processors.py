@@ -3,7 +3,7 @@ from pathlib import PurePath
 from configs.species_slices import BIN_X_SLICES, Y_SOOT_SLICES
 
 
-def sum_columns(filepath, suffix,
+def sum_columns(filepath,
                 old_columns=['grid', 'velocity', 'T'],
                 new_columns=None):
     df = pd.read_csv(filepath)
@@ -21,5 +21,5 @@ def sum_columns(filepath, suffix,
 def postprocess_creck_soot(path, flame):
     x_path = path / flame.label / f'{flame.label}_X.csv'
     y_path = path / flame.label / f'{flame.label}_y.csv'
-    sum_columns(x_path, suffix='BINs', new_columns=BIN_X_SLICES)
-    sum_columns(y_path, suffix='soot', new_columns=Y_SOOT_SLICES)
+    sum_columns(x_path, new_columns=BIN_X_SLICES)
+    sum_columns(y_path, new_columns=Y_SOOT_SLICES)
