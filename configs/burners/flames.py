@@ -28,23 +28,23 @@ acetylene_flame = ImpingingJetData(
     T_profile=None
 )
 
-dme_fractions = [0, 15, 30, 45, 60, 75, 90, 100]
-dme_flames = []
-for dme_fraction in dme_fractions:
-    dme_flames.append(
-        ImpingingJetData(
-            label=f'C2H4_{100-dme_fraction}_DME_{dme_fraction}',
-            fuel=f'C2H4:{100-dme_fraction} CH3OCH3:{dme_fraction}',
-            fuel_flow_lph=84,
-            oxydizer='O2:0.21, N2:0.78, AR:0.01',
-            oxydizer_flow_lph=545,
-            height=0.023,
-            T_room=293,
-            T_burner=400,
-            T_body=600,
-            T_profile=None
-        )
-    )
+# dme_fractions = [0, 15, 30, 45, 60, 75, 90, 100]
+# dme_flames = []
+# for dme_fraction in dme_fractions:
+#     dme_flames.append(
+#         ImpingingJetData(
+#             label=f'C2H4_{100-dme_fraction}_DME_{dme_fraction}',
+#             fuel=f'C2H4:{100-dme_fraction} CH3OCH3:{dme_fraction}',
+#             fuel_flow_lph=84,
+#             oxydizer='O2:0.21, N2:0.78, AR:0.01',
+#             oxydizer_flow_lph=545,
+#             height=0.023,
+#             T_room=293,
+#             T_burner=400,
+#             T_body=600,
+#             T_profile=None
+#         )
+#     )
 
 
 ethylene_est = ImpingingJetData(
@@ -60,12 +60,25 @@ ethylene_est = ImpingingJetData(
     T_profile=None
 )
 
-ethylene_he25 = ImpingingJetData(
-    label="ethylene_he",
-    fuel='C2H4:0.75 AR:0.25',
-    fuel_flow_lph=84,
+# ethylene_he25 = ImpingingJetData(
+#     label="ethylene_he",
+#     fuel='C2H4:0.75 HE:0.25',
+#     fuel_flow_lph=84,
+#     oxydizer='O2:0.21, N2:0.78, AR:0.01',
+#     oxydizer_flow_lph=573,
+#     height=0.023,
+#     T_room=293,
+#     T_burner=400,
+#     T_body=600,
+#     T_profile=None
+# )
+
+ethylene_he25_bal = ImpingingJetData(
+    label="ethylene_he_bal",
+    fuel='C2H4:0.75 HE:0.25',
+    fuel_flow_lph=111,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=573,
+    oxydizer_flow_lph=566,
     height=0.023,
     T_room=293,
     T_burner=400,
@@ -73,12 +86,25 @@ ethylene_he25 = ImpingingJetData(
     T_profile=None
 )
 
-ethylene_h2 = ImpingingJetData(
-    label="ethylene_h2",
+# ethylene_h2 = ImpingingJetData(
+#     label="ethylene_h2",
+#     fuel='C2H4:0.75 H2:0.25',
+#     fuel_flow_lph=84,
+#     oxydizer='O2:0.21, N2:0.78, AR:0.01',
+#     oxydizer_flow_lph=573,
+#     height=0.023,
+#     T_room=293,
+#     T_burner=400,
+#     T_body=600,
+#     T_profile=None
+# )
+
+ethylene_h2_bal = ImpingingJetData(
+    label="ethylene_h2_bal",
     fuel='C2H4:0.75 H2:0.25',
-    fuel_flow_lph=84,
+    fuel_flow_lph=111,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=573,
+    oxydizer_flow_lph=566,
     height=0.023,
     T_room=293,
     T_burner=400,
@@ -86,12 +112,25 @@ ethylene_h2 = ImpingingJetData(
     T_profile=None
 )
 
-ethylene_c3h8 = ImpingingJetData(
-    label="ethylene_c3h8",
+# ethylene_c3h8 = ImpingingJetData(
+#     label="ethylene_c3h8",
+#     fuel='C2H4:0.75 C3H8:0.25',
+#     fuel_flow_lph=84,
+#     oxydizer='O2:0.21, N2:0.78, AR:0.01',
+#     oxydizer_flow_lph=573,
+#     height=0.023,
+#     T_room=293,
+#     T_burner=400,
+#     T_body=600,
+#     T_profile=None
+# )
+
+ethylene_c3h8_bal = ImpingingJetData(
+    label="ethylene_c3h8_bal",
     fuel='C2H4:0.75 C3H8:0.25',
-    fuel_flow_lph=84,
+    fuel_flow_lph=71,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=573,
+    oxydizer_flow_lph=586,
     height=0.023,
     T_room=293,
     T_burner=400,
