@@ -28,7 +28,7 @@ acetylene_flame = ImpingingJetData(
     T_profile=None
 )
 
-dme_fractions = [15, 30, 60, 90]
+dme_fractions = [0, 15, 30, 60, 90]
 dme_flames = []
 for dme_fraction in dme_fractions:
     dme_flames.append(
