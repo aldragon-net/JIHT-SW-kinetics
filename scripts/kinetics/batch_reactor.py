@@ -1,26 +1,34 @@
 import numpy as np
+import pandas as pd
 import time
 import cantera as ct
 import matplotlib.pyplot as plt
+from pathlib import Path
 from scripts.utils.mixture import get_trifuel_for_o2
+from scripts.utils.csv_processors import sum_columns
+
+from configs.constants import OUTPUT_DIR, BATCH_OUTPUT
+from configs.species_slices import BIN_X_SLICES, Y_SOOT_SLICES
 
 
-def get_time_of_max_slope(states, species):
-    times = states.t
-    concentrations = states(species).Y
+def get_induction_time(times, concentrations):
     max_slope = 0
     time_of_max = 0
+    value_at_max = 0
     for i in range(1, len(concentrations)):
-        if i == 0:
-            pass
         slope = (concentrations[i] - concentrations[i-1]) / (times[i] - times[i-1])
         if slope > max_slope:
             max_slope = slope
             time_of_max = times[i]
-    return time_of_max
+            value_at_max = concentrations[i]
+    time_of_tangent = time_of_max - value_at_max/max_slope
+    return time_of_max, time_of_tangent
 
 
-reference_species = "OH"
+def get_induction_time_from_solution_array(states: ct.SolutionArray, species: str):
+    times = states.t
+    concentrations = [x[0] for x in states(species).X]
+    return get_induction_time(times, concentrations)
 
 
 def get_solution(gas, T, P, mixture, max_time=1):
@@ -38,23 +46,50 @@ def get_solution(gas, T, P, mixture, max_time=1):
     return time_history
 
 
-def write_csv(time_history, filename="output.csv"):
-    time_history.write_csv(filename, species="X")
+def write_csv(time_history, output_path='default', label='default'):
+    time_history.write_csv(output_path / f'{label}_X.csv', species="X")
+    time_history.write_csv(output_path / f'{label}_Y.csv', species="Y")
 
 
-def get_ignition_delay(gas, T, P, mixture, max_time=1):
+def get_ignition_delay(gas, T, P, mixture, max_time=1, reference_species='OH'):
     time_history = get_solution(gas, T, P, mixture, max_time)
-    tau = get_time_of_max_slope(time_history, reference_species)
-    return tau
+    t_max_slope, t_tangent = get_induction_time_from_solution_array(time_history, reference_species)
+    return t_max_slope, t_tangent
 
 
-def get_temperature_dependence(gas, Ts, P, mixture):
-    taus = []
+def get_IDT_temperature_dependence(gas, Ts, P, mixture, max_time=0.1, reference_species='OH'):
+    taus_max_slope = []
+    taus_tangent = []
     for temperature in Ts:
-        tau = get_ignition_delay(gas, temperature, P, mixture)
-        taus.append(tau)
-        print(temperature, tau)
-    return taus
+        t_max_slope, t_tangent = get_ignition_delay(
+            gas=gas,
+            T=temperature,
+            P=P,
+            mixture=mixture,
+            max_time=max_time,
+            reference_species=reference_species
+        )
+        taus_max_slope.append(t_max_slope)
+        taus_tangent.append(t_tangent)
+        print(temperature, t_max_slope, t_tangent)
+    return taus_max_slope, taus_tangent
+
+
+def get_manymodel_idt_tempertaute_dependence(
+        mechs: dict, Ts: list, P: float, mixture: str,
+        max_time=0.1, reference_species='OH', mode='tangent') -> pd.DataFrame:
+    output = pd.DataFrame(Ts, columns=['T[K]'])
+    for label, mech in mechs.items():
+        print(f'Obtainig IDT dependence with mech "{label}"')
+        gas = ct.Solution(mech, 'gas')
+        taus_max_slope, taus_tangent = get_IDT_temperature_dependence(
+            gas, Ts, P, mixture, max_time, reference_species
+        )
+        if mode == 'max_slope':
+            output[label] = taus_max_slope
+        else:
+            output[label] = taus_tangent
+    return output
 
 
 def get_mixture_label(alpha, beta, tertiary=''):
@@ -180,31 +215,53 @@ MECHS = {
     'FFCM': 'mechs/FFCM/FFCM1.yaml',
     'BabuCRECK-NH3': 'mechs/modified/BabuCRECK-NH3.yaml',
     'BabuCRECK-NH3-ALL': 'mechs/modified/BabuCLBRCRECK.yaml',
-    'Hong2011': 'mechs/Hong2011.yaml'
+    'Hong2011': 'mechs/Hong2011.yaml',
+    'AceHalo': 'mechs/AcetyleneHalo/AceHalo.yaml'
 }
 
-# temperature = 1650
-# mech = 'BabuCRECK-NH3-ALL'
+NH3MECHS = {
+    'Glarborg': 'mechs/NH3/glarborg.yaml',
+    'KAUST': 'mechs/NH3/KAUST_NH3.yaml',
+    'Konnov': 'mechs/NH3/konnov.yaml',
+    'Okafor': 'mechs/NH3/okafor.yaml',
+    'CRECK': 'mechs/NH3/CRECK_2003_C1_C3_HT_NOX.yaml'
+}
+
+temperatures = np.linspace(1400, 2000, 25)
+output = get_manymodel_idt_tempertaute_dependence(NH3MECHS, temperatures, 4.3e5, 'NH3:9.33 CH4:6.66 O2:20.33 AR:163.67')
+output.to_csv('output/BatchReactor/model-compare-NH3-CH4.csv')
+
+# temperature = 1500
+# mech = 'AceHalo'
 # gas = ct.Solution(MECHS[mech], 'gas')
 
-# pressure = 4.0*1e5
-# mixture = 'NH3:9.33 O2:7.000 AR:83.67'
+# pressure = 1e6
+# mixture = 'C2H2:10 CF3I:1 AR:89'
 
+# label="AceHalo"
+# output_path = Path() / OUTPUT_DIR / BATCH_OUTPUT / label
+# output_path.mkdir(parents=True, exist_ok=True)
 # solution = get_solution(gas, temperature, pressure, mixture)
-# solution.write_csv('output/output.csv', species="X")
+# write_csv(solution, output_path, label)
+# sum_columns(
+#     output_path / f'{label}_Y.csv',
+#     old_columns=['t', 'T', 'density'],
+#     new_columns=Y_SOOT_SLICES)
+# result = pd.read_csv(output_path / f'{label}_Y_sums.csv')
+# print(get_induction_time(result['t'], result['Y5']))
 
 # sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
 # for x in sensitivities[:20]:
 #     print(f'{x[0]}, {x[1]:.5f}')
 
-temperatures = np.linspace(1000, 1960, 49)
-mech = 'BabuCRECK-NH3-ALL'
-gas = ct.Solution(MECHS[mech], 'gas')
-print(gas.n_species)
-pressure = 5.0*1e5
-mixture = 'NH3:7.67 H2:2.8 O2:7 CCL4:1 AR:81.53'
+# temperatures = np.linspace(1000, 1960, 49)
+# mech = 'BabuCRECK-NH3-ALL'
+# gas = ct.Solution(MECHS[mech], 'gas')
+# print(gas.n_species)
+# pressure = 5.0*1e5
+# mixture = 'NH3:7.67 H2:2.8 O2:7 CCL4:1 AR:81.53'
 
-dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
+# dependence = get_temperature_dependence(gas, temperatures, pressure, mixture)
 
 # !! alpha-beta-dependence !
 # mech = 'GRI'
