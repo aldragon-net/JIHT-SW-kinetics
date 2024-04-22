@@ -46,6 +46,28 @@ for dme_fraction in dme_fractions:
         )
     )
 
+diluted_flames = []
+fractions = [0, 15, 30]
+for diluter in ['N2', 'AR']:
+    for fraction in fractions:
+        if diluter == 'AR' and fraction == 0:
+            continue
+        diluted_flames.append(
+            ImpingingJetData(
+                label=f'C2H4_{100-fraction}_{diluter}_{fraction}',
+                fuel=f'C2H4:{100-fraction} {diluter}:{fraction}',
+                fuel_flow_lph=88,
+                oxydizer='O2:0.21, N2:0.78, AR:0.01',
+                oxydizer_flow_lph=541,
+                height=0.023,
+                T_room=293,
+                T_burner=400,
+                T_body=600,
+                T_profile=None
+            )
+        )
+
+
 
 ethylene_est = ImpingingJetData(
     label="ethylene_base",
