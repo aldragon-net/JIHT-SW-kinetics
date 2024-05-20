@@ -28,10 +28,62 @@ acetylene_flame = ImpingingJetData(
     T_profile=None
 )
 
+acetylene_15DME_flame = ImpingingJetData(
+    label="acetylene_15DME",
+    fuel='C2H2:85, CH3OCH3:15',
+    fuel_flow_lph=84,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=545,
+    height=0.023,
+    T_room=293,
+    T_burner=400,
+    T_body=600,
+    T_profile=None
+)
+
+acetylene_15DME_flame_bal = ImpingingJetData(
+    label="acetylene_15DME_bal",
+    fuel='C2H2:85, CH3OCH3:15',
+    fuel_flow_lph=80,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=549,
+    height=0.023,
+    T_room=293,
+    T_burner=400,
+    T_body=600,
+    T_profile=None
+)
+
+acetylene_30DME_flame = ImpingingJetData(
+    label="acetylene_30DME",
+    fuel='C2H2:70, CH3OCH3:30',
+    fuel_flow_lph=84,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=545,
+    height=0.023,
+    T_room=293,
+    T_burner=400,
+    T_body=600,
+    T_profile=None
+)
+
+acetylene_30DME_flame_bal = ImpingingJetData(
+    label="acetylene_30DME_bal",
+    fuel='C2H2:70, CH3OCH3:30',
+    fuel_flow_lph=77,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=552,
+    height=0.023,
+    T_room=293,
+    T_burner=400,
+    T_body=600,
+    T_profile=None
+)
+
 dme_fractions = [0, 15, 30, 60, 90]
-dme_flames = []
+ethylene_dme_flames = []
 for dme_fraction in dme_fractions:
-    dme_flames.append(
+    ethylene_dme_flames.append(
         ImpingingJetData(
             label=f'C2H4_{100-dme_fraction}_DME_{dme_fraction}',
             fuel=f'C2H4:{100-dme_fraction} CH3OCH3:{dme_fraction}',
@@ -45,6 +97,7 @@ for dme_fraction in dme_fractions:
             T_profile=None
         )
     )
+
 
 diluted_flames = []
 fractions = [0, 15, 30]
