@@ -15,7 +15,7 @@ ethylene_flame = ImpingingJetData(
     T_profile=read_temperature_profile('mckenna-constructed-C2H4.dat')
 )
 
-acetylene_flame = ImpingingJetData(
+acetylene_flame_old = ImpingingJetData(
     label="acetylene_base",
     fuel='C2H2:1',
     fuel_flow_lph=84,
@@ -28,12 +28,12 @@ acetylene_flame = ImpingingJetData(
     T_profile=None
 )
 
-acetylene_15DME_flame = ImpingingJetData(
-    label="acetylene_15DME",
-    fuel='C2H2:85, CH3OCH3:15',
-    fuel_flow_lph=84,
+acetylene_flame = ImpingingJetData(
+    label="acetylene_base",
+    fuel='C2H2:1',
+    fuel_flow_lph=52,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=545,
+    oxydizer_flow_lph=348,
     height=0.023,
     T_room=293,
     T_burner=400,
@@ -41,12 +41,12 @@ acetylene_15DME_flame = ImpingingJetData(
     T_profile=None
 )
 
-acetylene_15DME_flame_bal = ImpingingJetData(
-    label="acetylene_15DME_bal",
+acetylene_15DME_flame = ImpingingJetData(
+    label="acetylene_15DME",
     fuel='C2H2:85, CH3OCH3:15',
-    fuel_flow_lph=80,
+    fuel_flow_lph=52,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=549,
+    oxydizer_flow_lph=348,
     height=0.023,
     T_room=293,
     T_burner=400,
@@ -57,9 +57,9 @@ acetylene_15DME_flame_bal = ImpingingJetData(
 acetylene_30DME_flame = ImpingingJetData(
     label="acetylene_30DME",
     fuel='C2H2:70, CH3OCH3:30',
-    fuel_flow_lph=84,
+    fuel_flow_lph=52,
     oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=545,
+    oxydizer_flow_lph=348,
     height=0.023,
     T_room=293,
     T_burner=400,
@@ -67,18 +67,6 @@ acetylene_30DME_flame = ImpingingJetData(
     T_profile=None
 )
 
-acetylene_30DME_flame_bal = ImpingingJetData(
-    label="acetylene_30DME_bal",
-    fuel='C2H2:70, CH3OCH3:30',
-    fuel_flow_lph=77,
-    oxydizer='O2:0.21, N2:0.78, AR:0.01',
-    oxydizer_flow_lph=552,
-    height=0.023,
-    T_room=293,
-    T_burner=400,
-    T_body=600,
-    T_profile=None
-)
 
 dme_fractions = [0, 15, 30, 60, 90]
 ethylene_dme_flames = []
