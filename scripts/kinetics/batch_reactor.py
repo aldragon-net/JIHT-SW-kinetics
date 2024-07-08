@@ -46,9 +46,9 @@ def get_solution(gas, T, P, mixture, max_time=1):
     return time_history
 
 
-def write_csv(time_history, output_path='default', label='default'):
-    time_history.write_csv(output_path / f'{label}_X.csv', species="X")
-    time_history.write_csv(output_path / f'{label}_Y.csv', species="Y")
+def write_csv(time_history, output_path='default', label='default', cols=None):
+    time_history.write_csv(output_path / f'{label}_X.csv', cols=cols, species="X")
+    time_history.write_csv(output_path / f'{label}_Y.csv', cols=cols, species="Y")
 
 
 def get_ignition_delay(gas, T, P, mixture, max_time=1, reference_species='OH'):
@@ -227,32 +227,54 @@ NH3MECHS = {
     'CRECK': 'mechs/NH3/CRECK_2003_C1_C3_HT_NOX.yaml'
 }
 
-temperatures = np.linspace(1400, 2000, 25)
-output = get_manymodel_idt_tempertaute_dependence(NH3MECHS, temperatures, 4.3e5, 'NH3:9.33 CH4:6.66 O2:20.33 AR:163.67')
-output.to_csv('output/BatchReactor/model-compare-NH3-CH4.csv')
+temperatures = [1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275, 
+                1300, 1333, 1366, 1400, 1433, 1466, 
+                1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850,
+                1900, 1950, 2000, 2100]
+mech = 'AceHalo'
+gas = ct.Solution(MECHS[mech], 'gas')
 
-# temperature = 1500
-# mech = 'AceHalo'
-# gas = ct.Solution(MECHS[mech], 'gas')
+pressure = 1.2e6
+mixtures = {'pure': 'C2H2:10 AR:90',
+            'C2F4Br2': 'C2H2:10 C2BR2F4:1 AR:89',
+            'CCl4': 'C2H2:10 CCL4:1 AR:89',
+            'CF3I': 'C2H2:10 CF3I:1 AR:89',
+            }
 
-# pressure = 1e6
-# mixture = 'C2H2:10 CF3I:1 AR:89'
-
-# label="AceHalo"
-# output_path = Path() / OUTPUT_DIR / BATCH_OUTPUT / label
-# output_path.mkdir(parents=True, exist_ok=True)
-# solution = get_solution(gas, temperature, pressure, mixture)
-# write_csv(solution, output_path, label)
-# sum_columns(
-#     output_path / f'{label}_Y.csv',
-#     old_columns=['t', 'T', 'density'],
-#     new_columns=Y_SOOT_SLICES)
-# result = pd.read_csv(output_path / f'{label}_Y_sums.csv')
-# print(get_induction_time(result['t'], result['Y5']))
+for mixture_label, mixture in mixtures.items():
+    report_path = Path() / OUTPUT_DIR / BATCH_OUTPUT / mixture_label
+    with report_path.open("w", encoding ="utf-8") as f:
+        f.write('T[K],t_max_C4H2, t_max_C6H6, t_max_C16H10, t_ind\n')
+    for temperature in temperatures:
+        label = f'{mixture_label}_{temperature}K'
+        output_path = Path() / OUTPUT_DIR / BATCH_OUTPUT / label
+        output_path.mkdir(parents=True, exist_ok=True)
+        solution = get_solution(gas, temperature, pressure, mixture, max_time=0.01)
+        write_csv(solution, output_path, label)
+        sum_columns(
+            output_path / f'{label}_Y.csv',
+            old_columns=['t', 'T', 'density'],
+            new_columns=Y_SOOT_SLICES)
+        cols = ('C2H2', 'C4H2', 'C6H6', 'C16H10')
+        write_csv(solution(*cols), output_path, label+'short')
+        result = pd.read_csv(output_path / f'{label}_Y_sums.csv')
+        _, t_ind =  get_induction_time(result['t'], result['Y5'])
+        Path.unlink(output_path / f'{label}_X.csv')
+        Path.unlink(output_path / f'{label}_Y.csv')
+        result = pd.read_csv(output_path / f'{label}short_X.csv')
+        t_max_c4h2 = result['t'][result['X_C4H2'].argmax()]
+        t_max_c6h6 = result['t'][result['X_C6H6'].argmax()]
+        t_max_c16h10 = result['t'][result['X_C16H10'].argmax()]
+        with report_path.open("a", encoding ="utf-8") as f:
+            f.write(f'{temperature},{t_max_c4h2},{t_max_c6h6},{t_max_c16h10},{t_ind}\n')
 
 # sensitivities = idt_sensitivity(gas, temperature, pressure, mixture)
 # for x in sensitivities[:20]:
 #     print(f'{x[0]}, {x[1]:.5f}')
+
+# temperatures = np.linspace(1400, 2000, 25)
+# output = get_manymodel_idt_tempertaute_dependence(NH3MECHS, temperatures, 4.3e5, 'NH3:9.33 CH4:6.66 O2:20.33 AR:163.67')
+# output.to_csv('output/BatchReactor/model-compare-NH3-CH4.csv')
 
 # temperatures = np.linspace(1000, 1960, 49)
 # mech = 'BabuCRECK-NH3-ALL'
