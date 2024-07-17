@@ -3,6 +3,9 @@ STOICHS = {
     'O2': 1,
     'H2': 2,
     'CH4': 0.5,
+    'C2H2': 0.4,
+    'C2H4': 0.3333,
+    'C2H6': 0.2857,
     'CO': 2,
     'NH3': 4/3,
     'CH3OH': 2/3,
@@ -14,6 +17,7 @@ admixtures = ['NH3', 'CH3OH', 'CH3OCH3']
 PERCENT = 100
 o2_fraction = 7
 phi = 1.0
+
 
 def fraction_string(species, fraction):
     return f' {species}:{fraction:.3f}' if fraction > 0 else ''
