@@ -337,13 +337,37 @@ def analyze_idt_sensitivity(gas, temperature, pressure, mixture, label='sensitiv
             output.write(f'R{x[0][0]}: {x[0][1]} \t\t {x[1]:.5f}\n')
 
 
-def manymodel_idt_sensitivity(mechs: dict, temperature: float, pressure: float, mixture: str):
-    for label, mech in mechs.items():
+def manymodel_idt_sensitivity(mechs: dict, temperature: float, pressure: float, mixture: str, mixlabel: str = 'mix'):
+    for mechlabel, mech in mechs.items():
         gas = ct.Solution(mech, 'gas')
-        analyze_idt_sensitivity(gas, temperature, pressure, mixture, label=label)
+        analyze_idt_sensitivity(gas, temperature, pressure, mixture, label=f'{mixlabel}_{mechlabel}')
 
 
-manymodel_idt_sensitivity(NH3MECHS, 1700, 3e5, 'NH3:9.333 O2:7.000 AR:83.667')
+mixtures_for_analysis = {
+    'CH4_a10': 'NH3:8.400 CH4:0.350 O2:7.000 AR:84.250',
+    'CH4_a30': 'NH3:6.533 CH4:1.050 O2:7.000 AR:85.417',
+    'C2H2_a10': 'NH3:8.400 C2H2:0.280 O2:7.000 AR:84.320',
+    'C2H2_a30': 'NH3:6.533 C2H2:0.840 O2:7.000 AR:85.627',
+    'C2H4_a10': 'NH3:8.400 C2H4:0.233 O2:7.000 AR:84.367',
+    'C2H4_a30': 'NH3:6.533 C2H4:0.700 O2:7.000 AR:85.767',
+    'C2H6_a10': 'NH3:8.400 C2H6:0.200 O2:7.000 AR:84.400',
+    'C2H6_a30': 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867'
+}
+
+test_mechs = {
+    'HongI': 'mechs/Hong2011.yaml',
+    'HongII': 'mechs/Hong2011.yaml'
+}
+
+
+def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
+    for mixlabel, mixture in mixtures.items():
+        manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
+                                  pressure=pressure, mixture=mixture, mixlabel=mixlabel
+                                  )
+
+
+multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NH3MECHS, 1400, 3e5)
 
 # output = get_manymodel_idt_tempertaute_dependence(NH3MECHS, temperatures, 4.3e5, 'NH3:9.33 CH4:6.66 O2:20.33 AR:163.67')
 # output.to_csv('output/BatchReactor/model-compare-NH3-CH4.csv')
