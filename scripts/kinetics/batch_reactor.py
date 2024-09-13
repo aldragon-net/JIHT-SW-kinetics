@@ -263,7 +263,7 @@ def idt_sensitivity(gas, T, P, mixture, dk=0.05):
         gas.set_multiplier(1.0)  # reset all multipliers
         gas.set_multiplier(1 + dk, r)  # perturb reaction m
         _, t = get_ignition_delay(gas, T, P, mixture)
-        print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks') 
+        print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks')
         sensitivity = np.log(t/t0) / np.log(1+dk)
         sensitivities.append(((r, gas.reaction_equations()[r]), sensitivity))
         sensitivities.sort(key=lambda x: abs(x[1]), reverse=True)
@@ -287,13 +287,14 @@ NH3MECHS = {
     'KAUST': 'mechs/NH3/KAUST_NH3.yaml',
     'Konnov': 'mechs/NH3/konnov.yaml',
     'Okafor': 'mechs/NH3/okafor.yaml',
-    'CRECK': 'mechs/NH3/CRECK_2003_C1_C3_HT_NOX.yaml'
+    'CRECK': 'mechs/NH3/CRECK_2003_C1_C3_HT_NOX.yaml',
+    'Faravelli': 'mechs/NH3/NH3-Faravelli.yaml',
+    'LiHeZhu': 'mechs/NH3/NH3-LiHeZhu.yaml'
 }
 
-temperatures = [1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275, 
-                1300, 1333, 1366, 1400, 1433, 1466, 
-                1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850,
-                1900, 1950, 2000, 2100]
+temperatures = [1300, 1333, 1366, 1400, 1433, 1466, 1500,
+                1550, 1600, 1650, 1700, 1750, 1800, 1850,
+                1900, 1950, 2000]
 
 def investigate_nh3():
     """Анализ зависимостей задержки воспламенения в системах NH3+CH4/C2H2/C2H4/C2H6"""
@@ -359,18 +360,25 @@ test_mechs = {
     'HongII': 'mechs/Hong2011.yaml'
 }
 
+output = get_manymodel_idt_temperature_dependence(NH3MECHS, temperatures, 9e5, 'NH3:9.333 O2:7.000 AR:83.67')
+output.to_csv('output/BatchReactor/model-compare-pureNH3-7bar.csv')
 
-def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
-    for mixlabel, mixture in mixtures.items():
-        manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
-                                  pressure=pressure, mixture=mixture, mixlabel=mixlabel
-                                  )
+# gas = ct.Solution('mechs/NH3/konnov.yaml', 'gas')
+# times = get_IDT_temperature_dependence(gas, temperatures, 700000, 'CH4:3.5 O2:7.0 AR:89.5', 2e-3)
+# for i in range(len(temperatures)):
+#     print(f'{temperatures[i]}, {times[1][i]:.4e}')
 
 
-multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NH3MECHS, 1400, 3e5)
+# def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
+#     for mixlabel, mixture in mixtures.items():
+#         manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
+#                                   pressure=pressure, mixture=mixture, mixlabel=mixlabel
+#                                   )
 
-# output = get_manymodel_idt_tempertaute_dependence(NH3MECHS, temperatures, 4.3e5, 'NH3:9.33 CH4:6.66 O2:20.33 AR:163.67')
-# output.to_csv('output/BatchReactor/model-compare-NH3-CH4.csv')
+
+# multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NH3MECHS, 1400, 3e5)
+
+
 
 
 #pressure = 1.2e6
