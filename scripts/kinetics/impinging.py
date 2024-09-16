@@ -6,7 +6,9 @@ from configs.burners.impinging_jet_data import ImpingingJetData
 from configs.burners.flames import (
     acetylene_flame, ethylene_flame, ethylene_dme_flames, diluted_flames,
     ethylene_est, ethylene_he25_bal, ethylene_h2_bal, ethylene_c3h8_bal,
-    acetylene_15DME_flame, acetylene_30DME_flame)
+    acetylene_15DME_flame, acetylene_30DME_flame,
+    acetylene_flame_sep2024, acetylene_5DME_flame_sep2024, acetylene_10DME_flame_sep2024,
+    acetylene_15DME_flame_sep2024, acetylene_30DME_flame_sep2024)
 
 from configs.constants import OUTPUT_DIR, MCKENNA_OUTPUT
 
@@ -118,7 +120,12 @@ def multi_solve_mckenna_stabilized(
 # flames = [ethylene_flame, acetylene_flame]
 # flames.extend(dme_flames)
 
-flames = [acetylene_flame, acetylene_15DME_flame, acetylene_30DME_flame]
+flames = [acetylene_flame_sep2024,
+          acetylene_5DME_flame_sep2024,
+          acetylene_10DME_flame_sep2024,
+          acetylene_15DME_flame_sep2024,
+          acetylene_30DME_flame_sep2024
+          ]
 
 rxnmech = 'mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml'  # 'mechs/GRI/gri30.yaml'
 
