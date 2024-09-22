@@ -345,6 +345,11 @@ def manymodel_idt_sensitivity(mechs: dict, temperature: float, pressure: float, 
 
 
 mixtures_for_analysis = {
+    'NH3': 'NH3:9.333 O2:7.000 AR:83.667',
+    'CH4': 'CH4 3.5 O2:7.000 AR:89.50',
+    'C2H2': 'C2H2 2.8 O2:7.000 AR:90.20',
+    'C2H4': 'C2H4 2.333 O2:7.000 AR:90.667',
+    'C2H4': 'C2H6 2.0 O2:7.000 AR:91',
     'CH4_a10': 'NH3:8.400 CH4:0.350 O2:7.000 AR:84.250',
     'CH4_a30': 'NH3:6.533 CH4:1.050 O2:7.000 AR:85.417',
     'C2H2_a10': 'NH3:8.400 C2H2:0.280 O2:7.000 AR:84.320',
@@ -360,8 +365,8 @@ test_mechs = {
     'HongII': 'mechs/Hong2011.yaml'
 }
 
-output = get_manymodel_idt_temperature_dependence(NH3MECHS, temperatures, 9e5, 'NH3:9.333 O2:7.000 AR:83.67')
-output.to_csv('output/BatchReactor/model-compare-pureNH3-7bar.csv')
+# output = get_manymodel_idt_temperature_dependence(NH3MECHS, temperatures, 9e5, 'NH3:9.333 O2:7.000 AR:83.67')
+# output.to_csv('output/BatchReactor/model-compare-pureNH3-7bar.csv')
 
 # gas = ct.Solution('mechs/NH3/konnov.yaml', 'gas')
 # times = get_IDT_temperature_dependence(gas, temperatures, 700000, 'CH4:3.5 O2:7.0 AR:89.5', 2e-3)
@@ -369,14 +374,14 @@ output.to_csv('output/BatchReactor/model-compare-pureNH3-7bar.csv')
 #     print(f'{temperatures[i]}, {times[1][i]:.4e}')
 
 
-# def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
-#     for mixlabel, mixture in mixtures.items():
-#         manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
-#                                   pressure=pressure, mixture=mixture, mixlabel=mixlabel
-#                                   )
+def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
+    for mixlabel, mixture in mixtures.items():
+        manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
+                                  pressure=pressure, mixture=mixture, mixlabel=mixlabel
+                                  )
 
 
-# multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NH3MECHS, 1400, 3e5)
+multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NH3MECHS, 1450, 8e5)
 
 
 
