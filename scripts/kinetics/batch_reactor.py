@@ -262,9 +262,13 @@ def idt_sensitivity(gas, T, P, mixture, dk=0.05):
         print(f'reaction {r} of {gas.n_reactions}')
         gas.set_multiplier(1.0)  # reset all multipliers
         gas.set_multiplier(1 + dk, r)  # perturb reaction m
-        _, t = get_ignition_delay(gas, T, P, mixture)
-        print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks')
-        sensitivity = np.log(t/t0) / np.log(1+dk)
+        try:
+            _, t = get_ignition_delay(gas, T, P, mixture)
+            print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks')
+            sensitivity = np.log(t/t0) / np.log(1+dk)
+        except:
+            print(f'Error while changing {gas.reaction_equations()[r]}')
+            sensitivity = 666
         sensitivities.append(((r, gas.reaction_equations()[r]), sensitivity))
         sensitivities.sort(key=lambda x: abs(x[1]), reverse=True)
     gas.set_multiplier(1.0)
@@ -345,12 +349,12 @@ def manymodel_idt_sensitivity(mechs: dict, temperature: float, pressure: float, 
 
 
 mixtures_for_analysis = {
-    'NH3': 'NH3:9.333 O2:7.000 AR:83.667',
-    'CH4': 'CH4 3.5 O2:7.000 AR:89.50',
-    'C2H2': 'C2H2 2.8 O2:7.000 AR:90.20',
-    'C2H4': 'C2H4 2.333 O2:7.000 AR:90.667',
-    'C2H6': 'C2H6 2.0 O2:7.000 AR:91',
-    'CH4_a10': 'NH3:8.400 CH4:0.350 O2:7.000 AR:84.250',
+    # 'NH3': 'NH3:9.333 O2:7.000 AR:83.667',
+    # 'CH4': 'CH4:3.5 O2:7.000 AR:89.50',
+    # 'C2H2': 'C2H2:2.8 O2:7.000 AR:90.20',
+    # 'C2H4': 'C2H4:2.333 O2:7.000 AR:90.667',
+    # 'C2H6': 'C2H6:2.0 O2:7.000 AR:91',
+    # 'CH4_a10': 'NH3:8.400 CH4:0.350 O2:7.000 AR:84.250',
     'CH4_a30': 'NH3:6.533 CH4:1.050 O2:7.000 AR:85.417',
     'C2H2_a10': 'NH3:8.400 C2H2:0.280 O2:7.000 AR:84.320',
     'C2H2_a30': 'NH3:6.533 C2H2:0.840 O2:7.000 AR:85.627',
