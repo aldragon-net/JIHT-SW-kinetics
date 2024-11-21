@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import enum
 import time
 import cantera as ct
 import matplotlib.pyplot as plt
@@ -10,8 +11,18 @@ from scripts.utils.csv_processors import sum_columns
 from configs.constants import OUTPUT_DIR, BATCH_OUTPUT
 from configs.species_slices import BIN_X_SLICES, Y_SOOT_SLICES
 
+class InductionTimeType(enum.Enum):
+    TANGENT = 'tangent'
+    SLOPE = 'slope'
 
-def get_induction_time(times, concentrations):
+
+class InductionTime:
+    def __init__(self, slope: float, tangent: float) -> None:
+        self.slope = slope
+        self.tangent = tangent
+
+
+def get_induction_time(times, concentrations) -> InductionTime:
     max_slope = 0
     time_of_max = 0
     value_at_max = 0
@@ -22,7 +33,8 @@ def get_induction_time(times, concentrations):
             time_of_max = times[i]
             value_at_max = concentrations[i]
     time_of_tangent = time_of_max - value_at_max/max_slope
-    return time_of_max, time_of_tangent
+    induction_time = InductionTime(slope=time_of_max, tangent=time_of_tangent)
+    return induction_time
 
 
 def get_induction_time_from_solution_array(states: ct.SolutionArray, species: str):
@@ -53,15 +65,14 @@ def write_csv(time_history, output_path='default', label='default', cols=None):
 
 def get_ignition_delay(gas, T, P, mixture, max_time=1, reference_species='OH'):
     time_history = get_solution(gas, T, P, mixture, max_time)
-    t_max_slope, t_tangent = get_induction_time_from_solution_array(time_history, reference_species)
-    return t_max_slope, t_tangent
+    induction_time = get_induction_time_from_solution_array(time_history, reference_species)
+    return induction_time
 
 
 def get_IDT_temperature_dependence(gas, Ts, P, mixture, max_time=0.1, reference_species='OH'):
-    taus_max_slope = []
-    taus_tangent = []
+    induction_times = []
     for temperature in Ts:
-        t_max_slope, t_tangent = get_ignition_delay(
+        induction_time = get_ignition_delay(
             gas=gas,
             T=temperature,
             P=P,
@@ -69,15 +80,15 @@ def get_IDT_temperature_dependence(gas, Ts, P, mixture, max_time=0.1, reference_
             max_time=max_time,
             reference_species=reference_species
         )
-        taus_max_slope.append(t_max_slope)
-        taus_tangent.append(t_tangent)
-    return taus_max_slope, taus_tangent
+        induction_times.append(induction_time)
+    return induction_times
+
 
 def get_IDT_pressure_dependence(gas, T, Ps, mixture, max_time=0.1, reference_species='OH'):
     taus_max_slope = []
     taus_tangent = []
     for pressure in Ps:
-        t_max_slope, t_tangent = get_ignition_delay(
+        induction_time = get_ignition_delay(
             gas=gas,
             T=T,
             P=pressure,
@@ -85,8 +96,8 @@ def get_IDT_pressure_dependence(gas, T, Ps, mixture, max_time=0.1, reference_spe
             max_time=max_time,
             reference_species=reference_species
         )
-        taus_max_slope.append(t_max_slope)
-        taus_tangent.append(t_tangent)
+        taus_max_slope.append(induction_time.slope)
+        taus_tangent.append(induction_time.tangent)
     return taus_max_slope, taus_tangent
 
 
@@ -109,7 +120,7 @@ def get_IDT_mixture_dependence(gas, T, P, mixtures, max_time=0.1, reference_spec
 
 def get_manymodel_idt_temperature_dependence(
         mechs: dict, Ts: list, P: float, mixture: str,
-        max_time=0.1, reference_species='OH', mode='tangent') -> pd.DataFrame:
+        max_time=0.1, reference_species='OH', mode=InductionTimeType.TANGENT.value) -> pd.DataFrame:
     output = pd.DataFrame(Ts, columns=['T[K]'])
     for label, mech in mechs.items():
         print(f'Obtainig IDT dependence with mech "{label}"')
@@ -126,7 +137,7 @@ def get_manymodel_idt_temperature_dependence(
 
 def get_manymodel_idt_pressure_dependence(
         mechs: dict, T: float, Ps: list, mixture: str,
-        max_time=0.1, reference_species='OH', mode='tangent') -> pd.DataFrame:
+        max_time=0.1, reference_species='OH', mode=InductionTimeType.TANGENT.value) -> pd.DataFrame:
     output = pd.DataFrame(Ps, columns=['P[Pa]'])
     for label, mech in mechs.items():
         print(f'Obtainig IDT dependence with mech "{label}"')
@@ -142,7 +153,7 @@ def get_manymodel_idt_pressure_dependence(
 
 def get_manymodel_idt_mixture_dependence(
         mechs: dict, T: float, P: float, fractions: list, mixtures: list,
-        max_time=0.1, reference_species='OH', mode='tangent') -> pd.DataFrame:
+        max_time=0.1, reference_species='OH', mode=InductionTimeType.TANGENT.value) -> pd.DataFrame:
     output = pd.DataFrame(fractions, columns=['fraction'])
     output['mixtures'] = mixtures
     for label, mech in mechs.items():
@@ -253,17 +264,17 @@ def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i
             f.write(', '.join(line))
 
 
-def idt_sensitivity(gas, T, P, mixture, dk=0.05):
+def idt_sensitivity(gas, T, P, mixture, dk=0.05, idt_mode: str = InductionTimeType.TANGENT.value):
     sensitivities = []
     gas.set_multiplier(1.0)
-    _, t0 = get_ignition_delay(gas, T, P, mixture)
+    t0 = getattr(get_ignition_delay(gas, T, P, mixture), idt_mode)
     print(f'Undisturbed tau = {t0*1e6:.2f} mks')
     for r in range(gas.n_reactions):
         print(f'reaction {r} of {gas.n_reactions}')
         gas.set_multiplier(1.0)  # reset all multipliers
         gas.set_multiplier(1 + dk, r)  # perturb reaction m
         try:
-            _, t = get_ignition_delay(gas, T, P, mixture)
+            t = getattr(get_ignition_delay(gas, T, P, mixture), idt_mode)
             print(f'Changing {gas.reaction_equations()[r]} t = {t*1e6:.2f} mks')
             sensitivity = np.log(t/t0) / np.log(1+dk)
         except:
