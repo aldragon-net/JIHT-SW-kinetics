@@ -311,12 +311,12 @@ NH3MECHS = {
 
 NSK_MODELS = {
     'MODEL_1': 'mechs/NSK/NSKmod_1.yaml',
-    # 'MODEL_2': 'mechs/NSK/NSKmod_2.yaml',
+    'MODEL_2': 'mechs/NSK/NSKmod_2.yaml',
     'MODEL_3': 'mechs/NSK/NSKmod_3.yaml',
     'MODEL_4': 'mechs/NSK/NSKmod_4.yaml',
     'MODEL_5': 'mechs/NSK/NSKmod_5.yaml',
     'MODEL_6': 'mechs/NSK/NSKmod_6.yaml',
-    # 'MODEL_7': 'mechs/NSK/NSKmod_7.yaml',
+    'MODEL_7': 'mechs/NSK/NSKmod_7.yaml',
 }
 
 temperatures = [1300, 1333, 1366, 1400, 1433, 1466, 1500,
