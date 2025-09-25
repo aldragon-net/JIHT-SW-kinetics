@@ -58,9 +58,9 @@ def get_solution(gas, T, P, mixture, max_time=1):
     return time_history
 
 
-def write_csv(time_history, output_path='default', label='default', cols=None):
-    time_history.write_csv(output_path / f'{label}_X.csv', cols=cols, species="X")
-    time_history.write_csv(output_path / f'{label}_Y.csv', cols=cols, species="Y")
+def write_csv(time_history, output_path='default', label='default'):
+    time_history.save(output_path / f'{label}_X.csv', basis="mole")
+    time_history.save(output_path / f'{label}_Y.csv', basis="mass")
 
 
 def get_ignition_delay(gas, T, P, mixture, max_time=1, reference_species='OH'):
@@ -266,12 +266,15 @@ def output_dependence_on_beta(dependencies, alphas, betas, temperatures, alpha_i
             f.write(', '.join(line))
 
 
-def idt_sensitivity(gas, T, P, mixture, dk=0.05, idt_mode: str = InductionTimeType.TANGENT.value):
+def idt_sensitivity(gas, T, P, mixture, dk=0.05, idt_mode: str = InductionTimeType.TANGENT.value, selected_reactions=None):
     sensitivities = []
     gas.set_multiplier(1.0)
     t0 = getattr(get_ignition_delay(gas, T, P, mixture), idt_mode)
     print(f'Undisturbed tau = {t0*1e6:.2f} mks')
     for r in range(gas.n_reactions):
+        if selected_reactions:
+            if r not in selected_reactions:
+                continue
         print(f'reaction {r} of {gas.n_reactions}')
         gas.set_multiplier(1.0)  # reset all multipliers
         gas.set_multiplier(1 + dk, r)  # perturb reaction m
@@ -308,20 +311,51 @@ NH3MECHS = {
     'Faravelli': 'mechs/NH3/NH3-Faravelli.yaml',
     'LiHeZhu': 'mechs/NH3/NH3-LiHeZhu.yaml'
 }
-
-NSK_MODELS = {
-    'MODEL_1': 'mechs/NSK/NSKmod_1.yaml',
-    'MODEL_2': 'mechs/NSK/NSKmod_2.yaml',
-    'MODEL_3': 'mechs/NSK/NSKmod_3.yaml',
-    'MODEL_4': 'mechs/NSK/NSKmod_4.yaml',
-    'MODEL_5': 'mechs/NSK/NSKmod_5.yaml',
-    'MODEL_6': 'mechs/NSK/NSKmod_6.yaml',
-    'MODEL_7': 'mechs/NSK/NSKmod_7.yaml',
+NH3_ALC_MECHS = {
+    'KAUST': 'mechs/NH3/KAUST_NH3.yaml',
+    'CRECK': 'mechs/NH3/CRECK_2003_C1_C3_HT_NOX.yaml',
+    'Konnov': 'mechs/NH3/konnov.yaml',
+    'Faravelli': 'mechs/NH3/NH3-Faravelli.yaml',
+    'LiHeZhu': 'mechs/NH3/NH3-LiHeZhu.yaml',
+    'Shrestha2022': 'mechs/NH3-ethers/shrestha2022.yaml',
+    'Zhang2023': 'mechs/NH3-ethers/zhang2023.yaml',
+    'Dai': 'mechs/NH3-ethers/Dai2024.yaml'
 }
 
-temperatures = [1300, 1333, 1366, 1400, 1433, 1466, 1500,
-                1550, 1600, 1650, 1700, 1750, 1800, 1850,
-                1900, 1950, 2000]
+NH3_DME_MECHS = {
+    # 'Konnov': 'mechs/NH3/konnov.yaml',
+    'LiHeZhu': 'mechs/NH3/NH3-LiHeZhu.yaml',
+    # 'Shrestha2022': 'mechs/NH3-ethers/shrestha2022.yaml',
+    'Zhang2023': 'mechs/NH3-ethers/zhang2023.yaml',
+    # 'Dai': 'mechs/NH3-ethers/Dai2024.yaml'
+}
+
+NH3_DEE_MECHS = {
+    'Shrestha2022': 'mechs/NH3-ethers/shrestha2022.yaml',
+    'Dai': 'mechs/NH3-ethers/Dai2024.yaml'
+}
+
+NSK_MODELS = {
+    # 'MODEL_1': 'mechs/NSK/NSKmod_1.yaml',
+    # 'MODEL_2': 'mechs/NSK/NSKmod_2.yaml',
+    # 'MODEL_3': 'mechs/NSK/NSKmod_3.yaml',
+    # 'MODEL_4': 'mechs/NSK/NSKmod_4.yaml',
+    # 'MODEL_5': 'mechs/NSK/NSKmod_5.yaml',
+    # 'MODEL_6': 'mechs/NSK/NSKmod_6.yaml',
+    # 'MODEL_7': 'mechs/NSK/NSKmod_7.yaml',
+    # 'MODEL_B': 'mechs/NSK/NSKmod_mechB.yaml',
+    'Shrestha2025': 'mechs/NSK/shrestha2025.yaml',
+    'Shrestha2025mod': 'mechs/NSK/shrestha2025mod.yaml',
+    'Shrestha2025v2': 'mechs/NSK/shrestha2025v2.yaml',
+    'Shrestha2025v3': 'mechs/NSK/shrestha2025v3.yaml',
+    'Shrestha2025v4': 'mechs/NSK/shrestha2025v4.yaml',
+    # 'Shrestha2021': 'mechs/NSK/shrestha2021.yaml',
+    # 'POLIMI': 'mechs/NSK/polimi.yaml',
+    # 'NUIG_Yin': 'mechs/NSK/NUIGMech1.1-M.yaml'
+}
+
+temperatures = [1250, 1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
+                1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
 
 def investigate_nh3():
     """Анализ зависимостей задержки воспламенения в системах NH3+CH4/C2H2/C2H4/C2H6"""
@@ -390,8 +424,8 @@ def investigate_C2H6_NSK():
                 presoutput.to_csv(f'output/BatchReactor/NH3-NSK/NH3-{admixture}-alpha{alpha:.0f}-T{temperature:.0f}K-pressures.csv')
 
 
-def analyze_idt_sensitivity(gas, temperature, pressure, mixture, label='sensitivity', limit=None, dk=0.5):
-    sensitivities = idt_sensitivity(gas, temperature, pressure, mixture, dk=dk)
+def analyze_idt_sensitivity(gas, temperature, pressure, mixture, label='sensitivity', limit=None, dk=0.5, selected_reactions=None):
+    sensitivities = idt_sensitivity(gas, temperature, pressure, mixture, dk=dk, selected_reactions=selected_reactions)
     with open(f'output/IDTsens_{label}.out', 'w') as output:
         output.write(f'IDT sensitivity analysis for {mixture} at {temperature}K {pressure/1e5:.3f} bar:\n')
         output.write(f'dk = {dk}\n\n')
@@ -405,29 +439,157 @@ def manymodel_idt_sensitivity(mechs: dict, temperature: float, pressure: float, 
         analyze_idt_sensitivity(gas, temperature, pressure, mixture, label=f'{mixlabel}_{mechlabel}')
 
 
+def investigate_reaction_sensitivity():
+    alphas = [0, 5, 10, 20, 30, 50, 70, 80, 90, 95, 100]
+    mixtures = []
+    for alpha in alphas:
+        mixture = get_trifuel_for_o2(o2_fraction=7, primary='NH3', secondary='C2H2', tertiary='', alpha=alpha, beta=0)
+        mixtures.append(mixture)
+    print(mixtures)
+    gas = ct.Solution(NH3MECHS['KAUST'], 'gas')
+    result = []
+    for i, mixture in enumerate(mixtures):
+        result.append((alphas[i], idt_sensitivity(gas, T=1350, P=8e5, dk=0.5, mixture=mixture, selected_reactions=[415])))
+    for s in result:
+        print(f'{s[0]}, {s[1][0][1]}')
+
+
+# investigate_reaction_sensitivity()
+
+def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
+    for mixlabel, mixture in mixtures.items():
+        manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
+                                  pressure=pressure, mixture=mixture, mixlabel=mixlabel
+  )
+
+# gas =  ct.Solution(NH3MECHS['LiHeZhu'], 'gas')
+# output_path = Path() / OUTPUT_DIR / BATCH_OUTPUT
+# solution = get_solution(gas, 1500, 7e5, 'NH3:9.333 O2:7.000 AR:83.667', max_time=0.002)
+# write_csv(solution, output_path, 'AMM_1500K')
+# solution = get_solution(gas, 1600, 7e5, 'NH3:9.333 O2:7.000 AR:83.667', max_time=0.002)
+# write_csv(solution, output_path, 'AMM_1600K')
+# solution = get_solution(gas, 1750, 7e5, 'NH3:9.333 O2:7.000 AR:83.667', max_time=0.002)
+# write_csv(solution, output_path, 'AMM_1750K')
+# solution = get_solution(gas, 1500, 7e5, 'CH4:3.5 O2:7.000 AR:89.50', max_time=0.002)
+# write_csv(solution, output_path, 'MET100_1500K')
+# solution = get_solution(gas, 1600, 7e5, 'CH4:3.5 O2:7.000 AR:89.50', max_time=0.002)
+# write_csv(solution, output_path, 'MET100_1600K')
+# solution = get_solution(gas, 1750, 7e5, 'CH4:3.5 O2:7.000 AR:89.50', max_time=0.002)
+# write_csv(solution, output_path, 'MET100_1750K')
+
 mixtures_for_analysis = {
-    # 'NH3': 'NH3:9.333 O2:7.000 AR:83.667',
     # 'CH4': 'CH4:3.5 O2:7.000 AR:89.50',
     # 'C2H2': 'C2H2:2.8 O2:7.000 AR:90.20',
     # 'C2H4': 'C2H4:2.333 O2:7.000 AR:90.667',
     # 'C2H6': 'C2H6:2.0 O2:7.000 AR:91',
+    # 'CH3OH': 'CH3OH:4.667 O2:7.000 AR:88.333',
+    # 'C2H5OH': 'C2H5OH:2.333 O2:7.000 AR:90.667',
+    # 'DME': 'CH3OCH3:2.333 O2:7.000 AR:90.667',
+    # 'DEE': 'DEE:1.167 O2:7.000 AR:91.833',
     # 'CH4_a10': 'NH3:8.400 CH4:0.350 O2:7.000 AR:84.250',
     # 'CH4_a30': 'NH3:6.533 CH4:1.050 O2:7.000 AR:85.417',
     # 'C2H2_a10': 'NH3:8.400 C2H2:0.280 O2:7.000 AR:84.320',
     # 'C2H2_a30': 'NH3:6.533 C2H2:0.840 O2:7.000 AR:85.627',
     # 'C2H4_a10': 'NH3:8.400 C2H4:0.233 O2:7.000 AR:84.367',
     # 'C2H4_a30': 'NH3:6.533 C2H4:0.700 O2:7.000 AR:85.767',
+    'C2H6_a30': 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867',
     'C2H6_a10': 'NH3:8.400 C2H6:0.200 O2:7.000 AR:84.400',
-    'C2H6_a30': 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867'
+    # 'CH3OH_a10': 'NH3:8.400 CH3OH:0.467 O2:7.000 AR:84.133',
+    # 'C2H5OH_a10': 'NH3:8.400 C2H5OH:0.233 O2:7.000 AR:84.367',
+    # 'DME_a10': 'NH3:8.400 CH3OCH3:0.233 O2:7.000 AR:84.367',
+    # 'DEE_a10': 'NH3:8.400 DEE:0.117 O2:7.000 AR:84.483',
+    # 'CH3OH_a30': 'NH3:6.533 CH3OH:1.400 O2:7.000 AR:85.067',
+    # 'C2H5OH_a30': 'NH3:6.533 C2H5OH:0.7 O2:7.000 AR:85.767',
+    # 'DME_a30': 'NH3:6.533 CH3OCH3:0.7 O2:7.000 AR:85.767',
+    # 'DEE_a30': 'NH3:6.533 DEE:0.35 O2:7.000 AR:86.117'
+    'NH3': 'NH3:9.333 O2:7.000 AR:83.667'
 }
 
-test_mechs = {
-    'HongI': 'mechs/Hong2011.yaml',
-    'HongII': 'mechs/Hong2011.yaml'
-}
 
-# output = get_manymodel_idt_temperature_dependence(NH3MECHS, temperatures, 9e5, 'NH3:9.333 O2:7.000 AR:83.67')
-# output.to_csv('output/BatchReactor/model-compare-pureNH3-7bar.csv')
+# multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, {'Shrestha2025': 'mechs/NSK/shrestha2025.yaml'}, 1400, 8.0e5)
+    
+
+
+
+# test_mechs = {
+#     'HongI': 'mechs/Hong2011.yaml',
+#     'HongII': 'mechs/Hong2011.yaml'
+# }
+
+# ammonia 
+temperatures = [1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
+                1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 6.4e5, 'NH3:9.333 O2:7.000 AR:83.67')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pureNH3-6.4bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 12.7e5, 'NH3:9.333 O2:7.000 AR:83.67')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pureNH3-12.7bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 4.1e5, 'NH3:9.333 O2:7.000 AR:83.67')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pureNH3-4.1bar.csv')
+
+# pure fuels
+temperatures = [1025, 1050, 1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250,
+                1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500 ]
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 8.8e5, 'CH3OH:4.667 O2:7.000 AR:88.333')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pure-CH3OH-8.8bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 8.1e5, 'C2H5OH:2.333 O2:7.000 AR:90.667')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pure-C2H5OH-8.1bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DME_MECHS, temperatures, 8.2e5, 'CH3OCH3:2.333 O2:7.000 AR:90.667')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pure-DME-8.2bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DEE_MECHS, temperatures, 8.3e5, 'DEE:1.167 O2:7.000 AR:91.833')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/pure-DEE-8.3bar.csv')
+
+# 10% 
+# temperatures = [1275, 1300, 1325, 1350, 1375, 1400, 1425, 1450,
+#                 1475, 1500, 1525, 1550, 1575, 1600, 1633, 1666, 1700 ]
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 6.9e5, 'NH3:8.400 CH3OH:0.467 O2:7.000 AR:84.133')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/CH3OH_a10_6.9bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 6.7e5, 'NH3:8.400 C2H5OH:0.233 O2:7.000 AR:84.367')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/C2H5OH_a10_6.7bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DME_MECHS, temperatures, 7.0e5, 'NH3:8.400 CH3OCH3:0.233 O2:7.000 AR:84.367')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/DME_a10_7.0bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DEE_MECHS, temperatures, 6.9e5, 'NH3:8.400 DEE:0.117 O2:7.000 AR:84.483')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/DEE_a10_6.9bar.csv')
+
+# 30% 
+# temperatures = [1175, 1200, 1225, 1250, 1275, 1300, 1325, 1350,
+#                 1375, 1400, 1425, 1450, 1475, 1500, 1533, 1566, 1600, 1650 ]
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 7.6e5, 'NH3:6.533 CH3OH:1.400 O2:7.000 AR:85.067')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/CH3OH_a30_7.6bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_ALC_MECHS, temperatures, 7.2e5, 'NH3:6.533 C2H5OH:0.7 O2:7.000 AR:85.767')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/C2H5OH_a30_7.2bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DME_MECHS, temperatures, 7.5e5, 'NH3:6.533 CH3OCH3:0.7 O2:7.000 AR:85.767')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/DME_a30_7.5bar.csv')
+
+# output = get_manymodel_idt_temperature_dependence(
+#     NH3_DEE_MECHS, temperatures, 7.4e5, 'NH3:6.533 DEE:0.35 O2:7.000 AR:86.117')
+# output.to_csv('output/BatchReactor/NH3-alc-eth/DEE_a30_7.4bar.csv')
+
+
 
 # gas = ct.Solution('mechs/NH3/konnov.yaml', 'gas')
 # times = get_IDT_temperature_dependence(gas, temperatures, 700000, 'CH4:3.5 O2:7.0 AR:89.5', 2e-3)
@@ -435,31 +597,22 @@ test_mechs = {
 #     print(f'{temperatures[i]}, {times[1][i]:.4e}')
 
 
-def multimixtures_manymodel_idt_sensitivity(mixtures: dict, mechs: dict, temperature: float, pressure: float):
-    for mixlabel, mixture in mixtures.items():
-        manymodel_idt_sensitivity(mechs=mechs, temperature=temperature, 
-                                  pressure=pressure, mixture=mixture, mixlabel=mixlabel
-                                  )
 
-
-# multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, NSK_MODELS, 1450, 8e5)
 # investigate_C2H6_NSK()
 
 temperatures = [1250, 1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
-                1550, 1600, 1650, 1700, 1750, 1800, 1850,
-                1900, 1950, 2000]
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7e5, 'NH3:9.333 O2:7.000 AR:83.67')
-output.to_csv('output/BatchReactor/NSK-7models-pureNH3-7.0bar.csv')
+                1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
+
 output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.7e5, 'NH3:8.400 C2H6:0.200 O2:7.000 AR:84.400')
-output.to_csv('output/BatchReactor/NSK-7models-10C2H6-7.7bar.csv')
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 8e5, 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867')
-output.to_csv('output/BatchReactor/NSK-7models-30C2H6-8.0bar.csv')
-temperatures = [1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1333,
-                1366, 1400, 1450, 1500]
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 9e5, 'C2H6:2.0 O2:7.000 AR:91')
-output.to_csv('output/BatchReactor/NSK-7models-100C2H6-9.0bar.csv')
+output.to_csv('output/BatchReactor/Shrestha2025Vesrions-10C2H6-7.7bar.csv')
+output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 8.0e5, 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867')
+output.to_csv('output/BatchReactor/Shrestha2025Versions-30C2H6-8.0bar.csv')
+output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.0e5, 'NH3:9.333 O2:7.000 AR:83.667')
+output.to_csv('output/BatchReactor/Shrestha2025Versions-100NH3-7.0bar.csv')
 
-
+temperatures = [1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1333, 1366, 1400, 1450, 1500]
+output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 9.0e5, 'C2H6:2.0 O2:7.000 AR:91')
+output.to_csv('output/BatchReactor/Shrestha2025Versions-100C2H6-9.0bar.csv')
 
 #pressure = 1.2e6
 # mixtures = {'pure': 'C2H2:10 AR:90',

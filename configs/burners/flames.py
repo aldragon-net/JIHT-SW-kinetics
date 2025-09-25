@@ -15,6 +15,45 @@ ethylene_flame = ImpingingJetData(
     T_profile=read_temperature_profile('mckenna-constructed-C2H4.dat')
 )
 
+flame1_aug2025 = ImpingingJetData(
+    label="Flame1_Aug2025",
+    fuel='C2H4:83',
+    fuel_flow_lph=83,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=566,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=600,
+    T_profile=None
+)
+
+flame2_aug2025 = ImpingingJetData(
+    label="Flame2_Aug2025",
+    fuel='C2H4:78 CH3OCH3:5',
+    fuel_flow_lph=83,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=566,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=600,
+    T_profile=None
+)
+
+flame3_aug2025 = ImpingingJetData(
+    label="Flame3_Aug2025",
+    fuel='C2H4:71 CH3OCH3:12',
+    fuel_flow_lph=83,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=566,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=600,
+    T_profile=None
+)
+
 ethylene_flame_dec2024_1 = ImpingingJetData(
     label="ethylene_Dec2024_1",
     fuel='C2H4:1',

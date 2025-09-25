@@ -9,7 +9,7 @@ from configs.burners.flames import (
     acetylene_15DME_flame, acetylene_30DME_flame,
     acetylene_flame_sep2024, acetylene_5DME_flame_sep2024, acetylene_10DME_flame_sep2024,
     acetylene_15DME_flame_sep2024, acetylene_30DME_flame_sep2024,
-    ethylene_flame_dec2024_1, ethylene_flame_dec2024_2)
+    flame1_aug2025, flame2_aug2025, flame3_aug2025)
 
 from configs.constants import OUTPUT_DIR, MCKENNA_OUTPUT
 
@@ -121,17 +121,18 @@ def multi_solve_mckenna_stabilized(
 # flames = [ethylene_flame, acetylene_flame]
 # flames.extend(dme_flames)
 
-flames = [ethylene_flame_dec2024_1,
-          ethylene_flame_dec2024_2
+flames = [flame1_aug2025,
+          flame2_aug2025,
+          flame3_aug2025
           ]
 
 rxnmech = 'mechs/CRECK/CRECK-HT-LT-SOOT-ETHALC-MERGED.yaml'  # 'mechs/GRI/gri30.yaml'
 
 grid_refine_criteria = GridRefineCriteria(
     ratio=3,
-    slope=0.06,
+    slope=0.08,
     curve=0.12,
-    prune=0.03
+    prune=0.04
 )
 
 multi_solve_mckenna_stabilized(
