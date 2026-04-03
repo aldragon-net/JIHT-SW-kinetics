@@ -119,6 +119,58 @@ acetylene_flame_sep2024 = ImpingingJetData(
     T_profile=None
 )
 
+flame1_mar2026 = ImpingingJetData(
+    label="Flame1_Mar2026_gas",
+    fuel='C2H2:1',
+    fuel_flow_lph=52,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=345,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=700,
+    T_profile=None
+)
+
+flame2_mar2026 = ImpingingJetData(
+    label="Flame2_Mar2026_gas",
+    fuel='C2H2:92.31, CH3OCH3:7.69',
+    fuel_flow_lph=52,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=345,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=700,
+    T_profile=None
+)
+
+flame3_mar2026 = ImpingingJetData(
+    label="Flame3_Mar2026_gas",
+    fuel='C2H2:84.62, CH3OCH3:15.38',
+    fuel_flow_lph=52,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=345,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=700,
+    T_profile=None
+)
+
+flame4_mar2026 = ImpingingJetData(
+    label="Flame4_Mar2026_gas",
+    fuel='C2H2:75, CH3OCH3:25',
+    fuel_flow_lph=52,
+    oxydizer='O2:0.21, N2:0.78, AR:0.01',
+    oxydizer_flow_lph=345,
+    height=0.023,
+    T_room=293,
+    T_burner=325,
+    T_body=700,
+    T_profile=None
+)
+
 acetylene_5DME_flame_sep2024 = ImpingingJetData(
     label="acetylene_5DME_sep2024",
     fuel='C2H2:94.23, CH3OCH3:5.77',
