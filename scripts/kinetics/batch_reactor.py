@@ -546,24 +546,108 @@ mixtures_with_NHEPTHANE = {
     'NHEPTHANE_a30': 'NC7H16:0.191 NH3:6.533 O2:7.000 AR:86.276'
 }
 
+FURAN_MECHS = {
+    'Sirjean13': 'mechs/furans/Sirjean13.yaml',
+    'Tran17': 'mechs/furans/Tran17.yaml',
+    'Fenard19': 'mechs/furans/Fenard19.yaml',
+    'Wu20': 'mechs/furans/Wu20.yaml',
+    'Somers': 'mechs/furans/Somers.yaml',
+    'Cheng23': 'mechs/furans/Cheng23.yaml',
+}
+
+FURAN_NH3_MECHS = {
+    'Tran17_KAUST_NH3': 'mechs/furans/Tran17-KAUST_NH3.yaml',
+    'Wu20_KAUST_NH3': 'mechs/furans/Wu20-KAUST_NH3.yaml'
+}
+
+C3Mech4_MECHS = {
+    'C3Mech_3XQ9': 'mechs/C3Mech401/C3MechV4.0.1_3XQ9_C0-C7_C5CY_C6CY_N_PAH_HT.yaml'
+}
+
 
 # multimixtures_manymodel_idt_sensitivity(mixtures_for_analysis, {'Shrestha2025': 'mechs/NSK/shrestha2025.yaml'}, 1400, 8.0e5)
     
 
+# output_path = Path() / OUTPUT_DIR / BATCH_OUTPUT
+# solution = get_solution(gas, 1400, 3e5, 'THFURAN:1.272e-3 O2:7.00e-3 AR:91.728', max_time=0.002)
+# write_csv(solution, output_path, 'modCheng')
 
 
-# test_mechs = {
-#     'HongI': 'mechs/Hong2011.yaml',
-#     'HongII': 'mechs/Hong2011.yaml'
-# }
 
-# ammonia 
-temperatures = [1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
-                1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
+# FURANS 
 
+
+temperatures = [1333, 1366, 1400, 1433, 1466, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850]
+
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 6.4e5, 'NH3:9.333 O2:7.000 AR:83.67')
+output.to_csv('output/BatchReactor/NH3-furans/furamm_pureNH3-6.4bara.csv')
+
+temperatures = [1166, 1200, 1233, 1266, 1300, 1333, 1366,
+                1400, 1433, 1466, 1500, 1550, 1600, 1650]
+
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 7.8e5, 'FURAN:1.55 O2:7.000 AR:91.45')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-pureFURAN-7.8bar.csv')
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 7.5e5, 'THFURAN:1.272 O2:7.000 AR:91.7287')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-pureTHFURAN-7.5bar.csv')
+
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 6.3e5, 'FURAN:0.155 NH3:8.400 O2:7 AR:84.445')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-FURAN_a10-6.3bar.csv')
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 6.7e5, 'FURAN:0.467 NH3:6.533 O2:7 AR:86.000')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-FURAN_a30-6.7bar.csv')
+
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 6.2e5, 'THFURAN:0.127 NH3:8.400 O2:7 AR:84.473')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-THFURAN_a10-6.2bar.csv')
+output = get_manymodel_idt_temperature_dependence(
+    FURAN_NH3_MECHS, temperatures, 6.8e5, 'THFURAN:0.382 NH3:6.533 O2:7 AR:86.085')
+output.to_csv('output/BatchReactor/NH3-furans/furamm-THFURAN_a30-6.8bar.csv')
+
+
+
+# # HEAVY
+# # ammonia
 # output = get_manymodel_idt_temperature_dependence(
-#     NH3_ALC_MECHS, temperatures, 6.4e5, 'NH3:9.333 O2:7.000 AR:83.67')
-# output.to_csv('output/BatchReactor/NH3-alc-eth/pureNH3-6.4bar.csv')
+#     C3Mech4_MECHS, temperatures, 6.4e5, 'NH3:9.333 O2:7.000 AR:83.67')
+# output.to_csv('output/BatchReactor/NH3-heavy/pureNH3-6.4bara.csv')
+
+# # toluene
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.2e5, 'C6H5CH3:0.778 O2:7.000 AR:92.222')
+# output.to_csv('output/BatchReactor/NH3-heavy/pureTOLUENE-7.2bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 6.6e5, 'C6H5CH3:0.0778 NH3:8.400 O2:7.000 AR:84.5222')
+# output.to_csv('output/BatchReactor/NH3-heavy/TOLUENE_a10-6.6bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 6.9e5, 'C6H5CH3:0.233 NH3:6.533 O2:7.000 AR:86.234')
+# output.to_csv('output/BatchReactor/NH3-heavy/TOLUENE_a30-6.9bara.csv')
+
+# # cyhexane
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.6e5, 'CYC6H12:0.778 O2:7.000 AR:92.222')
+# output.to_csv('output/BatchReactor/NH3-heavy/pureCYHEXANE-7.6bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 6.7e5, 'CYC6H12:0.0778 NH3:8.400 O2:7.000 AR:84.5222')
+# output.to_csv('output/BatchReactor/NH3-heavy/CYHEXANE_a10-6.7bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.0e5, 'CYC6H12:0.233 NH3:6.533 O2:7.000 AR:86.234')
+# output.to_csv('output/BatchReactor/NH3-heavy/CYHEXANE_a30-7.0bara.csv')
+
+# # n-hepthane
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.9e5, 'NC7H16:0.636 O2:7.000 AR:92.364')
+# output.to_csv('output/BatchReactor/NH3-heavy/pureNHEPTHANE-7.9bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.0e5, 'NC7H16:0.0636 NH3:8.400 O2:7.000 AR:84.5364')
+# output.to_csv('output/BatchReactor/NH3-heavy/NHEPTHANE_a10-7.0bara.csv')
+# output = get_manymodel_idt_temperature_dependence(
+#     C3Mech4_MECHS, temperatures, 7.2e5, 'NC7H16:0.191 NH3:6.533 O2:7.000 AR:86.276')
+# output.to_csv('output/BatchReactor/NH3-heavy/NHEPTHANE_a30-7.2bara.csv')
+
 
 # output = get_manymodel_idt_temperature_dependence(
 #     NH3_ALC_MECHS, temperatures, 12.7e5, 'NH3:9.333 O2:7.000 AR:83.67')
@@ -641,19 +725,19 @@ temperatures = [1025, 1050, 1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250,
 
 # investigate_C2H6_NSK()
 
-temperatures = [1250, 1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
-                1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
+# temperatures = [1250, 1275, 1300, 1333, 1366, 1400, 1433, 1466, 1500,
+#                 1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 2000 ]
 
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.7e5, 'NH3:8.400 C2H6:0.200 O2:7.000 AR:84.400')
-output.to_csv('output/BatchReactor/Shrestha2025Vesrions-10C2H6-7.7bar.csv')
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 8.0e5, 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867')
-output.to_csv('output/BatchReactor/Shrestha2025Versions-30C2H6-8.0bar.csv')
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.0e5, 'NH3:9.333 O2:7.000 AR:83.667')
-output.to_csv('output/BatchReactor/Shrestha2025Versions-100NH3-7.0bar.csv')
+# output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.7e5, 'NH3:8.400 C2H6:0.200 O2:7.000 AR:84.400')
+# output.to_csv('output/BatchReactor/Shrestha2025Vesrions-10C2H6-7.7bar.csv')
+# output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 8.0e5, 'NH3:6.533 C2H6:0.600 O2:7.000 AR:85.867')
+# output.to_csv('output/BatchReactor/Shrestha2025Versions-30C2H6-8.0bar.csv')
+# output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 7.0e5, 'NH3:9.333 O2:7.000 AR:83.667')
+# output.to_csv('output/BatchReactor/Shrestha2025Versions-100NH3-7.0bar.csv')
 
-temperatures = [1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1333, 1366, 1400, 1450, 1500]
-output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 9.0e5, 'C2H6:2.0 O2:7.000 AR:91')
-output.to_csv('output/BatchReactor/Shrestha2025Versions-100C2H6-9.0bar.csv')
+# temperatures = [1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1333, 1366, 1400, 1450, 1500]
+# output = get_manymodel_idt_temperature_dependence(NSK_MODELS, temperatures, 9.0e5, 'C2H6:2.0 O2:7.000 AR:91')
+# output.to_csv('output/BatchReactor/Shrestha2025Versions-100C2H6-9.0bar.csv')
 
 #pressure = 1.2e6
 # mixtures = {'pure': 'C2H2:10 AR:90',
